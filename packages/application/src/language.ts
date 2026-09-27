@@ -1,5 +1,5 @@
 import { AaApi, Cache, ItemEnvelope, LanguageModel, ListEnvelope, NotFound } from "@aa/domain"
-import type { AaError, PromptType, ResponseMeta } from "@aa/domain"
+import type { AaError, PerfInterval, PerfWindow, PromptType, ResponseMeta } from "@aa/domain"
 import { Effect, Either, Schema } from "effect"
 import { cachedGet } from "./cached.ts"
 import { collectAllPages } from "./paging.ts"
@@ -96,8 +96,8 @@ export const getLanguageModel = (
   })
 
 export interface PerfWindowOpts extends CommonOpts {
-  readonly window?: string
-  readonly interval?: string
+  readonly window?: PerfWindow
+  readonly interval?: PerfInterval
   readonly promptType?: PromptType
 }
 

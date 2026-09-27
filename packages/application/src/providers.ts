@@ -1,5 +1,5 @@
 import { AaApi, Cache, ItemEnvelope, ListEnvelope, Provider } from "@aa/domain"
-import type { AaError, PromptType } from "@aa/domain"
+import type { AaError, PerfInterval, PerfWindow, PromptType } from "@aa/domain"
 import { Effect, Schema } from "effect"
 import { cachedGet } from "./cached.ts"
 import { collectAllPages } from "./paging.ts"
@@ -67,8 +67,8 @@ export const getProvider = (
   })
 
 export interface ProviderPerfOpts extends CommonOpts {
-  readonly window?: string
-  readonly interval?: string
+  readonly window?: PerfWindow
+  readonly interval?: PerfInterval
   readonly promptType?: PromptType
 }
 
