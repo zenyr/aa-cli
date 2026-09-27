@@ -34,6 +34,7 @@ const makeStaleQuotaCache = (): Layer.Layer<Cache> =>
         clear: () => Ref.set(store, new Map()),
         getRateLimit: () => Ref.get(rateLimit),
         setRateLimit: (snapshot: QuotaSnapshot) => Ref.set(rateLimit, Option.some(snapshot)),
+        clearRateLimit: () => Ref.set(rateLimit, Option.none()),
       }
     }),
   )
@@ -225,6 +226,30 @@ describe("ambiguity errors", () => {
     const parsed = JSON.parse(captured.stderr[0] ?? "{}")
     expect(parsed.error.code).toBe("usage")
     expect(parsed.error.hint).toContain("candidates:")
+  })
+})
+
+describe("aa cache clear", () => {
+  it("clears responses and quota by default", () => {
+    const { captured, exitCode } = runCli(["cache", "clear"], {})
+    expect(exitCode).toBe(0)
+    const parsed = JSON.parse(captured.stdout[0] ?? "{}")
+    expect(parsed.data.cleared).toEqual(["responses", "quota"])
+  })
+
+  it("clears only the quota snapshot with --quota", () => {
+    const { captured, exitCode } = runCli(["cache", "clear", "--quota"], {})
+    expect(exitCode).toBe(0)
+    const parsed = JSON.parse(captured.stdout[0] ?? "{}")
+    expect(parsed.data.cleared).toEqual(["quota"])
+  })
+})
+
+describe("aa cache (no subcommand)", () => {
+  it("exits 2 and writes a usage message", () => {
+    const { captured, exitCode } = runCli(["cache"], {})
+    expect(exitCode).toBe(2)
+    expect(captured.stderr.length).toBeGreaterThan(0)
   })
 })
 

@@ -3,6 +3,7 @@ import { Command } from "@effect/cli"
 import { Effect, Ref } from "effect"
 import { ExitCode } from "../exit-code.ts"
 import { Output } from "../output.ts"
+import { cacheCommand } from "./cache.ts"
 import { compareCommand } from "./compare.ts"
 import { endpointsCommand } from "./endpoints.ts"
 import { findCommand } from "./find.ts"
@@ -31,6 +32,7 @@ const base = Command.make("aa", {}, () =>
       '  aa compare "opus 5.5" "opus 5" --fields slug,pricing.price_1m_input_tokens',
       "  aa models --sort -evaluations.artificial_analysis_intelligence_index --limit 10",
       "  aa quota",
+      "  aa cache clear --quota",
     ].join("\n"),
   ),
 )
@@ -47,5 +49,6 @@ export const rootCommand = base.pipe(
     endpointsCommand,
     schemaCommand,
     rawCommand,
+    cacheCommand,
   ]),
 )

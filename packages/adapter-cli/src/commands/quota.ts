@@ -34,4 +34,8 @@ export const quotaCommand = Command.make("quota", { ...dataOptions }, (opts) => 
     return toResult(view, meta, notices)
   })
   return runItemCommand(opts, summaryFields, effect)
-}).pipe(Command.withDescription("캐시된 사용량 한도 상태 (요청 소모 없음)"))
+}).pipe(
+  Command.withDescription(
+    "캐시된 사용량 한도 상태 (요청 소모 없음). 기억된 티어를 즉시 잊게 하려면 aa cache clear --quota",
+  ),
+)

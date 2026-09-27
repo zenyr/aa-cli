@@ -70,6 +70,7 @@ export const makeFakeCache = (): Layer.Layer<Cache> =>
         clear: () => Ref.set(store, new Map()),
         getRateLimit: () => Ref.get(rateLimit),
         setRateLimit: (snapshot: QuotaSnapshot) => Ref.set(rateLimit, Option.some(snapshot)),
+        clearRateLimit: () => Ref.set(rateLimit, Option.none()),
       }
     }),
   )

@@ -35,6 +35,7 @@ export const schemaFor = (command: string, modifier?: string): unknown => {
     case "quota":
     case "endpoints":
     case "raw":
+    case "cache clear":
       return unknownSchema
     default:
       return unknownSchema
@@ -55,4 +56,5 @@ export const knownSchemaCommands: ReadonlyArray<string> = [
   "quota",
   "endpoints",
   "raw",
+  "cache clear",
 ]
