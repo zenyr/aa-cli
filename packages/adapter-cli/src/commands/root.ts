@@ -5,6 +5,7 @@ import { ExitCode } from "../exit-code.ts"
 import { Output } from "../output.ts"
 import { compareCommand } from "./compare.ts"
 import { endpointsCommand } from "./endpoints.ts"
+import { findCommand } from "./find.ts"
 import { mediaCommand } from "./media.ts"
 import { modelCommand } from "./model.ts"
 import { modelsCommand } from "./models.ts"
@@ -38,6 +39,7 @@ export const rootCommand = base.pipe(
   Command.withSubcommands([
     modelsCommand,
     modelCommand,
+    findCommand,
     compareCommand,
     providersCommand,
     mediaCommand,

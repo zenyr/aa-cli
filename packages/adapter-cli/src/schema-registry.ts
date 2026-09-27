@@ -21,6 +21,8 @@ export const schemaFor = (command: string, modifier?: string): unknown => {
       return unknownSchema
     case "compare":
       return modelsSchema
+    case "find":
+      return modelsSchema
     case "media":
       return mediaSchema
     case "providers":
@@ -44,6 +46,7 @@ export const knownSchemaCommands: ReadonlyArray<string> = [
   "model",
   "model perf",
   "compare",
+  "find",
   "media",
   "providers",
   "providers get",

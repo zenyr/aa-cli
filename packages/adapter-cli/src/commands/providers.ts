@@ -4,6 +4,7 @@ import {
   getProviderMeasurements,
   getProviderPerformance,
   listProviders,
+  summaryFields,
 } from "@aa/application"
 import type {
   GetProviderOpts,
@@ -45,8 +46,7 @@ const startDate = Options.text("start-date").pipe(
   Options.withDescription("measurements 시작일 (YYYY-MM-DD)"),
 )
 
-// application 쪽에 provider 전용 요약 필드 세트가 없어 여기서 최소 세트를 정의한다.
-const providerSummaryFields: ReadonlyArray<string> = ["slug", "name"]
+const providerSummaryFields: ReadonlyArray<string> = summaryFields.provider
 
 export const providersCommand = Command.make(
   "providers",
