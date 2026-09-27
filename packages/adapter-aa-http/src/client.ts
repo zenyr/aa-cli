@@ -24,7 +24,10 @@ const DEFAULT_BASE_URL = "https://artificialanalysis.ai/api/v2"
 const apiKeyConfig = Config.redacted("AA_APIKEY").pipe(
   Effect.mapError(
     () =>
-      new AuthError({ message: "AA_APIKEY is not set", hint: "set AA_APIKEY (see .env.example)" }),
+      new AuthError({
+        message: "AA_APIKEY is not set",
+        hint: "set AA_APIKEY env var or put it in ~/.config/aa-cli/.env",
+      }),
   ),
 )
 

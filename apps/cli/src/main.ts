@@ -6,6 +6,7 @@ import { OutputLive, run } from "@aa/adapter-cli"
 import { FetchHttpClient } from "@effect/platform"
 import { BunContext } from "@effect/platform-bun"
 import { Effect, Layer, Logger, LogLevel } from "effect"
+import { buildConfigProvider } from "./config-provider.ts"
 
 const MainLive = Layer.mergeAll(
   AaApiLive.pipe(Layer.provide(FetchHttpClient.layer)),
@@ -18,6 +19,7 @@ const logLevel = process.env["AA_DEBUG"] === undefined ? LogLevel.None : LogLeve
 
 const program = run(process.argv).pipe(
   Effect.provide(MainLive),
+  Effect.withConfigProvider(buildConfigProvider()),
   Logger.withMinimumLogLevel(logLevel),
 )
 
