@@ -60,6 +60,10 @@ export const fakeCacheLayer = (state: FakeCacheState) =>
       Effect.sync(() => {
         state.quota = Option.some(snapshot)
       }),
+    clearRateLimit: () =>
+      Effect.sync(() => {
+        state.quota = Option.none()
+      }),
   })
 
 export const okMeta = (

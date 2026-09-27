@@ -1,6 +1,6 @@
 import { Effect, Layer, Option, TestClock, TestContext } from "effect"
 import { describe, expect, it } from "bun:test"
-import { getQuotaView } from "../src/quota.ts"
+import { clearCache, getQuotaView } from "../src/quota.ts"
 import { fakeCacheLayer, makeFakeCacheState } from "./fakes.ts"
 
 describe("getQuotaView", () => {
@@ -52,5 +52,39 @@ describe("getQuotaView", () => {
     expect(view.stale).toBe(true)
     expect(view.remaining).toBe(1000)
     expect(view.reset_in_seconds).toBeNull()
+  })
+})
+
+describe("clearCache", () => {
+  it("clears both responses and quota by default", async () => {
+    const cacheState = makeFakeCacheState()
+    cacheState.store.set("k", { value: 1, storedAt: 0 })
+    cacheState.quota = Option.some({
+      tier: "free",
+      rateLimit: { limit: 100, remaining: 1, reset: 1 },
+      observedAt: 0,
+    })
+    const layer = fakeCacheLayer(cacheState)
+
+    const result = await Effect.runPromise(Effect.provide(clearCache({}), layer))
+    expect(result.cleared).toEqual(["responses", "quota"])
+    expect(cacheState.store.size).toBe(0)
+    expect(Option.isNone(cacheState.quota)).toBe(true)
+  })
+
+  it("clears only the quota snapshot when quotaOnly is set", async () => {
+    const cacheState = makeFakeCacheState()
+    cacheState.store.set("k", { value: 1, storedAt: 0 })
+    cacheState.quota = Option.some({
+      tier: "free",
+      rateLimit: { limit: 100, remaining: 1, reset: 1 },
+      observedAt: 0,
+    })
+    const layer = fakeCacheLayer(cacheState)
+
+    const result = await Effect.runPromise(Effect.provide(clearCache({ quotaOnly: true }), layer))
+    expect(result.cleared).toEqual(["quota"])
+    expect(cacheState.store.size).toBe(1)
+    expect(Option.isNone(cacheState.quota)).toBe(true)
   })
 })

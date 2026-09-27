@@ -9,6 +9,21 @@ export const getQuota = (): Effect.Effect<Option.Option<QuotaSnapshot>, never, C
     return yield* cache.getRateLimit()
   })
 
+// `aa cache clear` 결과. quotaOnly 면 기억된 티어/사용량만 지워 다음 요청에서 즉시 재감지되게 한다.
+export const clearCache = (o: {
+  readonly quotaOnly?: boolean
+}): Effect.Effect<{ readonly cleared: ReadonlyArray<"responses" | "quota"> }, never, Cache> =>
+  Effect.gen(function* () {
+    const cache = yield* Cache
+    if (o.quotaOnly) {
+      yield* cache.clearRateLimit()
+      return { cleared: ["quota"] as const }
+    }
+    yield* cache.clear()
+    yield* cache.clearRateLimit()
+    return { cleared: ["responses", "quota"] as const }
+  })
+
 // CLI `aa quota` 가 그대로 출력할 수 있는, 롤오버를 반영한 사용량 뷰.
 export interface QuotaView {
   readonly tier: Tier | null
