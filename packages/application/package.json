@@ -1,0 +1,20 @@
+{
+  "name": "@aa/application",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "bun test --pass-with-no-tests"
+  },
+  "dependencies": {
+    "@aa/domain": "workspace:*",
+    "effect": "^3.22.2"
+  },
+  "devDependencies": {
+    "@aa/tsconfig": "workspace:*"
+  }
+}

@@ -1,0 +1,25 @@
+# 커밋/푸시 훅. 우회(--no-verify) 금지 (AGENTS.md)
+pre-commit:
+  parallel: true
+  commands:
+    fmt:
+      glob: "*.{ts,tsx,js,mjs,cjs,json,jsonc,md,yml,yaml}"
+      exclude: "refs/**"
+      run: bunx oxfmt {staged_files}
+      stage_fixed: true
+    lint:
+      glob: "*.{ts,tsx,js,mjs,cjs}"
+      run: bunx oxlint {staged_files}
+
+commit-msg:
+  commands:
+    conventional:
+      run: bunx commitlint --edit {1}
+
+pre-push:
+  parallel: true
+  commands:
+    typecheck:
+      run: bun run typecheck
+    test:
+      run: bun run test

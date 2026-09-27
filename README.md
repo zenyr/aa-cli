@@ -37,12 +37,12 @@ adapter-*  ──┘
 apps/cli ── 모든 레이어를 Layer 로 조립
 ```
 
-| 레이어 | 담는 것 |
-| --- | --- |
-| domain | `Schema` 엔티티 (LanguageModel, Provider, MediaModel, Envelope, Pagination, Tier, RateLimit)<br>태그드 에러 (`AuthError`, `TierError`, `NotFound`, `RateLimited`, `BadRequest`, `ServerError`)<br>포트 (`AaApi`, `Cache`, `Clock`) |
-| application | models, model, compare, rank, media 유스케이스<br>페이지 전체 수집, 티어 폴백 (pro 403 → `/free`), 필드 선택·정렬·필터 |
-| adapters | 포트 구현만 |
-| apps/cli | `main.ts` 에서 Layer 조립 + `BunRuntime.runMain`, `bun build --compile` |
+| 레이어      | 담는 것                                                                                                                                                                                                                            |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| domain      | `Schema` 엔티티 (LanguageModel, Provider, MediaModel, Envelope, Pagination, Tier, RateLimit)<br>태그드 에러 (`AuthError`, `TierError`, `NotFound`, `RateLimited`, `BadRequest`, `ServerError`)<br>포트 (`AaApi`, `Cache`, `Clock`) |
+| application | models, model, compare, rank, media 유스케이스<br>페이지 전체 수집, 티어 폴백 (pro 403 → `/free`), 필드 선택·정렬·필터                                                                                                             |
+| adapters    | 포트 구현만                                                                                                                                                                                                                        |
+| apps/cli    | `main.ts` 에서 Layer 조립 + `BunRuntime.runMain`, `bun build --compile`                                                                                                                                                            |
 
 ## 커맨드 (초안)
 
@@ -61,14 +61,14 @@ aa raw <path> [--query k=v]                                  # 탈출구: 임의
 
 공통 옵션:
 
-| 옵션 | 설명 |
-| --- | --- |
+| 옵션                                   | 설명                                    |
+| -------------------------------------- | --------------------------------------- |
 | `--format json\|jsonl\|table\|tsv\|md` | TTY 면 `table`, 파이프면 `json` 이 기본 |
-| `--json` | `--format json` 별칭 |
-| `--fields a,b.c` | 필드 프로젝션 |
-| `--limit`, `--sort`, `--filter` | 결과 줄이기 |
-| `--full` | 요약 대신 전체 필드 |
-| `--no-cache`, `--offline` | 캐시 제어 |
+| `--json`                               | `--format json` 별칭                    |
+| `--fields a,b.c`                       | 필드 프로젝션                           |
+| `--limit`, `--sort`, `--filter`        | 결과 줄이기                             |
+| `--full`                               | 요약 대신 전체 필드                     |
+| `--no-cache`, `--offline`              | 캐시 제어                               |
 
 ## 출력 계약
 
@@ -97,15 +97,15 @@ table 출력일 때는 마지막 줄(stderr)에 `Data: Artificial Analysis` 를 
 
 ### 종료 코드
 
-| code | 의미 |
-| --- | --- |
-| 0 | 성공 |
-| 1 | 알 수 없는 오류 / 5xx |
-| 2 | 사용법 오류 / 400 |
-| 3 | 인증 (401, 키 없음) |
-| 4 | 티어 부족 (403) |
-| 5 | not found (404) |
-| 6 | 한도 초과 (429) |
+| code | 의미                  |
+| ---- | --------------------- |
+| 0    | 성공                  |
+| 1    | 알 수 없는 오류 / 5xx |
+| 2    | 사용법 오류 / 400     |
+| 3    | 인증 (401, 키 없음)   |
+| 4    | 티어 부족 (403)       |
+| 5    | not found (404)       |
+| 6    | 한도 초과 (429)       |
 
 ## 워크트리
 
@@ -139,12 +139,15 @@ scripts/cache-dir.sh   # → <메인 워크트리>/.git/aa-cache
 ## 개발
 
 ```sh
-bun run build | typecheck | lint | fmt | test   # = turbo run <task>
+bun run check                                   # fmt:check + lint + typecheck + test
+bun run build | typecheck | test                # turbo run <task>
+bun run lint | fmt                              # oxlint / oxfmt (루트에서 한 번에)
+bun run --cwd apps/cli dev -- <args>            # aa 실행 (AA_CACHE_DIR 자동 주입)
 AA_LIVE=1 bun run test                          # 실제 API 호출 테스트 (한도 소모)
 ```
 
 - lefthook `pre-commit`: staged 파일에 oxfmt, oxlint
-- lefthook `commit-msg`: Conventional Commits 검사
+- lefthook `commit-msg`: Conventional Commits 검사 (commitlint, 스코프 목록은 `commitlint.config.ts`)
 - lefthook `pre-push`: typecheck, test
 
 ## 참고

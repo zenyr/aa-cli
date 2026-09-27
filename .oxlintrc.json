@@ -1,0 +1,60 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["typescript", "unicorn", "oxc", "import"],
+  "categories": { "correctness": "error", "suspicious": "warn" },
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "no-console": "off"
+  },
+  "ignorePatterns": ["refs/**", "**/dist/**"],
+  "overrides": [
+    {
+      "files": ["packages/domain/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@aa/*", "@effect/*"],
+                "message": "domain 은 effect 외 의존성을 두지 않는다 (AGENTS.md)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/application/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@aa/adapter-*", "@effect/platform*", "@effect/cli"],
+                "message": "application 은 domain 에만 의존한다 (AGENTS.md)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["packages/adapter-*/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@aa/adapter-*", "@zenyr/*"],
+                "message": "어댑터끼리 서로 import 하지 않는다 (AGENTS.md)"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -4,12 +4,12 @@
 - [x] `AGENTS.md`, `README.md`, `.gitignore`, `.env.example`
 - [x] 워크트리 공유 개발 캐시 경로 (`scripts/cache-dir.sh`)
 - [x] 워크트리 `.env` 심볼릭 링크 (`scripts/init-worktree.sh`)
-- [ ] 루트 스캐폴딩
-  - [ ] bun workspaces
-  - [ ] turbo.json
-  - [ ] oxlint, oxfmt 설정 (레이어 간 역방향 import 금지 규칙 포함)
-  - [ ] lefthook
-  - [ ] `@aa/tsconfig`
+- [x] 루트 스캐폴딩
+  - [x] bun workspaces
+  - [x] turbo.json
+  - [x] oxlint, oxfmt 설정 (레이어 간 역방향 import 금지 규칙 포함)
+  - [x] lefthook
+  - [x] `@aa/tsconfig`
 - [ ] `@aa/domain`: 스키마, 포트, 에러
 - [ ] `@aa/adapter-aa-http`
   - [ ] HttpClient
