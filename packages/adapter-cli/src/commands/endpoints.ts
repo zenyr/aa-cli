@@ -2,13 +2,13 @@
 import { endpoints, toResult } from "@aa/application"
 import { ResponseMeta } from "@aa/domain"
 import { Command } from "@effect/cli"
-import { Effect } from "effect"
-import { dataOptions } from "../global-options.ts"
+import { Effect, Option } from "effect"
+import { minimalOutputOptions } from "../global-options.ts"
 import { runListCommand } from "./support.ts"
 
 const summaryFields: ReadonlyArray<string> = ["method", "path", "tier", "command", "summary"]
 
-export const endpointsCommand = Command.make("endpoints", { ...dataOptions }, (opts) => {
+export const endpointsCommand = Command.make("endpoints", { ...minimalOutputOptions }, (opts) => {
   const meta = new ResponseMeta({
     tier: null,
     rate_limit: null,
@@ -17,5 +17,6 @@ export const endpointsCommand = Command.make("endpoints", { ...dataOptions }, (o
     fetched_at: new Date().toISOString(),
   })
   const effect = Effect.succeed(toResult(endpoints, meta))
-  return runListCommand(opts, summaryFields, effect)
-}).pipe(Command.withDescription("지원 엔드포인트와 필요 티어"))
+  const listOpts = { ...opts, full: false, sort: Option.none(), filter: [], limit: Option.none() }
+  return runListCommand(listOpts, summaryFields, effect)
+}).pipe(Command.withDescription("Supported endpoints and required tiers"))

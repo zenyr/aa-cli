@@ -4,12 +4,19 @@ import { exitCodeOf, type AaError } from "@aa/domain"
 import { Effect, Option, Ref } from "effect"
 import { formatError } from "../format/error.ts"
 import { formatOutput, toOutputMeta, type Row } from "../format/index.ts"
-import { resolveCacheMode, resolveFormat, type DataOptionsValue } from "../global-options.ts"
+import {
+  resolveCacheMode,
+  resolveFormat,
+  type FetchOptionsValue,
+  type FormatOnlyOptionsValue,
+  type MinimalOutputOptionsValue,
+  type OutputOptionsValue,
+} from "../global-options.ts"
 import { ExitCode } from "../exit-code.ts"
 import { Output } from "../output.ts"
 import { applyRowPipeline } from "../pipeline.ts"
 
-export const commonOptsOf = (v: DataOptionsValue): CommonOpts => {
+export const commonOptsOf = (v: FetchOptionsValue): CommonOpts => {
   const ttlSeconds = Option.getOrUndefined(v.ttl)
   return ttlSeconds === undefined
     ? { cache: resolveCacheMode(v) }
@@ -18,7 +25,7 @@ export const commonOptsOf = (v: DataOptionsValue): CommonOpts => {
 
 // 성공 시 exit code 0, 실패(AaError) 시 렌더링 후 README 종료 코드 표를 따른다. 이 Effect 는 실패하지 않는다.
 const finish = <A, R>(
-  opts: DataOptionsValue,
+  opts: FormatOnlyOptionsValue,
   effect: Effect.Effect<A, AaError, R>,
   onSuccess: (a: A) => Effect.Effect<void, never, Output | ExitCode>,
 ): Effect.Effect<void, never, Output | ExitCode | R> =>
@@ -50,7 +57,7 @@ const writeRows = (
 
 // 목록 커맨드: 필드 프로젝션 + 정렬 + 필터 + limit 을 모두 적용한다.
 export const runListCommand = <R>(
-  opts: DataOptionsValue,
+  opts: OutputOptionsValue,
   summaryFields: ReadonlyArray<string>,
   effect: Effect.Effect<Result<ReadonlyArray<unknown>>, AaError, R>,
 ): Effect.Effect<void, never, Output | ExitCode | R> =>
@@ -80,8 +87,9 @@ export const runListCommand = <R>(
   )
 
 // 단건 커맨드: 필드 프로젝션만 적용한다 (정렬/필터/limit 은 의미 없음).
+// `full` 옵션이 없는 커맨드(quota 등)는 기본값 false 를 넘긴다.
 export const runItemCommand = <R>(
-  opts: DataOptionsValue,
+  opts: MinimalOutputOptionsValue & { readonly full?: boolean },
   summaryFields: ReadonlyArray<string>,
   effect: Effect.Effect<Result<unknown>, AaError, R>,
 ): Effect.Effect<void, never, Output | ExitCode | R> =>
@@ -92,7 +100,7 @@ export const runItemCommand = <R>(
       const rows = yield* applyRowPipeline([result.data], {
         fields: Option.getOrUndefined(opts.fields),
         summaryFields,
-        full: opts.full,
+        full: opts.full ?? false,
         sort: undefined,
         filters: [],
         limit: undefined,
@@ -111,9 +119,9 @@ export const runItemCommand = <R>(
     }),
   )
 
-// 프로젝션이 필요 없는 커맨드 (quota, endpoints, raw 등): 그대로 rows 로 출력.
+// 프로젝션이 필요 없는 커맨드 (raw 등): 그대로 rows 로 출력.
 export const runRawCommand = <R>(
-  opts: DataOptionsValue,
+  opts: FormatOnlyOptionsValue,
   effect: Effect.Effect<Result<unknown>, AaError, R>,
 ): Effect.Effect<void, never, Output | ExitCode | R> =>
   finish(opts, effect, (result) =>

@@ -2,9 +2,9 @@
 import { clearCache, toResult } from "@aa/application"
 import { ResponseMeta } from "@aa/domain"
 import { Command, Options } from "@effect/cli"
-import { Effect, Ref } from "effect"
+import { Effect, Option, Ref } from "effect"
 import { ExitCode } from "../exit-code.ts"
-import { dataOptions } from "../global-options.ts"
+import { formatOnlyOptions } from "../global-options.ts"
 import { Output } from "../output.ts"
 import { runItemCommand } from "./support.ts"
 
@@ -12,10 +12,10 @@ const summaryFields = ["cleared"]
 
 const quota = Options.boolean("quota").pipe(
   Options.withDefault(false),
-  Options.withDescription("forget remembered tier/quota only (re-detects tier on next request)"),
+  Options.withDescription("Forget the remembered tier/quota only (re-detects on next request)"),
 )
 
-const clearCommand = Command.make("clear", { ...dataOptions, quota }, (opts) => {
+const clearCommand = Command.make("clear", { ...formatOnlyOptions, quota }, (opts) => {
   const meta = new ResponseMeta({
     tier: null,
     rate_limit: null,
@@ -26,8 +26,8 @@ const clearCommand = Command.make("clear", { ...dataOptions, quota }, (opts) => 
   const effect = Effect.map(clearCache({ quotaOnly: opts.quota }), (result) =>
     toResult(result, meta),
   )
-  return runItemCommand(opts, summaryFields, effect)
-}).pipe(Command.withDescription("로컬 캐시 비우기 (기본: 응답+티어 모두, --quota: 티어만)"))
+  return runItemCommand({ ...opts, fields: Option.none() }, summaryFields, effect)
+}).pipe(Command.withDescription("Clear local cache (default: responses+tier, --quota: tier only)"))
 
 const cacheBase = Command.make("cache", {}, () =>
   Effect.gen(function* () {
@@ -36,6 +36,6 @@ const cacheBase = Command.make("cache", {}, () =>
     const exit = yield* ExitCode
     yield* Ref.set(exit, 2)
   }),
-).pipe(Command.withDescription("로컬 캐시 관리"))
+).pipe(Command.withDescription("Manage the local cache"))
 
 export const cacheCommand = cacheBase.pipe(Command.withSubcommands([clearCommand]))

@@ -5,11 +5,11 @@ import { ExitCode } from "../exit-code.ts"
 import { Output } from "../output.ts"
 import { schemaFor } from "../schema-registry.ts"
 
-const command = Args.text({ name: "command" })
+const command = Args.text({ name: "command" }).pipe(Args.withDescription("Target command name"))
 
 const modifier = Args.text({ name: "modifier" }).pipe(
   Args.optional,
-  Args.withDescription("예: model perf 의 'perf', providers get 의 'get'"),
+  Args.withDescription("e.g. 'perf' for model perf, 'get' for providers get"),
 )
 
 export const schemaCommand = Command.make("schema", { command, modifier }, (opts) =>
@@ -20,4 +20,4 @@ export const schemaCommand = Command.make("schema", { command, modifier }, (opts
     const exit = yield* ExitCode
     yield* Ref.set(exit, 0)
   }),
-).pipe(Command.withDescription("커맨드 출력의 JSON Schema"))
+).pipe(Command.withDescription("JSON Schema of a command's data output"))

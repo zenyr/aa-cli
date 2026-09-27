@@ -3,7 +3,7 @@ import { getQuotaView, toResult } from "@aa/application"
 import { RateLimit, ResponseMeta } from "@aa/domain"
 import { Command } from "@effect/cli"
 import { Effect } from "effect"
-import { dataOptions } from "../global-options.ts"
+import { minimalOutputOptions } from "../global-options.ts"
 import { runItemCommand } from "./support.ts"
 
 const summaryFields = [
@@ -16,7 +16,7 @@ const summaryFields = [
   "stale",
 ]
 
-export const quotaCommand = Command.make("quota", { ...dataOptions }, (opts) => {
+export const quotaCommand = Command.make("quota", { ...minimalOutputOptions }, (opts) => {
   const effect = Effect.map(getQuotaView(), (view) => {
     const meta = new ResponseMeta({
       tier: view.tier,
@@ -36,6 +36,6 @@ export const quotaCommand = Command.make("quota", { ...dataOptions }, (opts) => 
   return runItemCommand(opts, summaryFields, effect)
 }).pipe(
   Command.withDescription(
-    "캐시된 사용량 한도 상태 (요청 소모 없음). 기억된 티어를 즉시 잊게 하려면 aa-cli cache clear --quota",
+    "Last observed rate limit (no request). Forget the remembered tier: aa-cli cache clear --quota",
   ),
 )

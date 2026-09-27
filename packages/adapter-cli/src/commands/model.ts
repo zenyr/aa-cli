@@ -4,33 +4,35 @@ import type { GetLanguageModelOpts, PerfWindowOpts } from "@aa/application"
 import { PerfInterval, PerfWindow, UsageError } from "@aa/domain"
 import { Args, Command, Options } from "@effect/cli"
 import { Effect, Option } from "effect"
-import { dataOptions } from "../global-options.ts"
+import { fetchOptions, outputOptions, promptTypeOption } from "../global-options.ts"
 import { commonOptsOf, runItemCommand } from "./support.ts"
 
 // slug 또는 이름/키워드 질의. 트레일링 `perf` 모드와 구분해야 하므로 공백 포함 질의는 따옴표로 감싼다.
 const slug = Args.text({ name: "query" }).pipe(
-  Args.withDescription('slug 또는 이름 질의, 예: aa-cli model "opus 5.5"'),
+  Args.withDescription('slug or name query, e.g. aa-cli model "opus 5.5"'),
 )
 
 // `perf` 리터럴만 허용하는 선택적 트레일링 토큰.
 const mode = Args.text({ name: "mode" }).pipe(
   Args.optional,
-  Args.withDescription("생략하면 단건 조회, 'perf' 를 주면 성능 추이 (commercial)"),
+  Args.withDescription(
+    "Omit for a single lookup, or pass 'perf' for performance history (commercial)",
+  ),
 )
 
 const window = Options.choice("window", PerfWindow.literals).pipe(
   Options.optional,
-  Options.withDescription("perf 조회 기간"),
+  Options.withDescription("perf query window"),
 )
 
 const interval = Options.choice("interval", PerfInterval.literals).pipe(
   Options.optional,
-  Options.withDescription("perf 집계 간격"),
+  Options.withDescription("perf aggregation interval"),
 )
 
 export const modelCommand = Command.make(
   "model",
-  { ...dataOptions, slug, mode, window, interval },
+  { ...outputOptions, ...fetchOptions, ...promptTypeOption, slug, mode, window, interval },
   (opts) => {
     if (Option.isSome(opts.mode) && opts.mode.value !== "perf") {
       const err = new UsageError({
@@ -58,8 +60,6 @@ export const modelCommand = Command.make(
   },
 ).pipe(
   Command.withDescription(
-    [
-      '언어 모델 단건 조회 / 성능 추이. 질의에 공백이 있으면 따옴표로 감싼다: aa-cli model "opus 5.5"',
-    ].join("\n"),
+    'One language model, or its performance history. Quote queries with spaces: aa-cli model "opus 5.5"',
   ),
 )

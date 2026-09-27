@@ -3,26 +3,26 @@ import { listMedia, summaryFields } from "@aa/application"
 import type { ListMediaOpts } from "@aa/application"
 import { MediaKind } from "@aa/domain"
 import { Args, Command, Options } from "@effect/cli"
-import { dataOptions, freeOptOf } from "../global-options.ts"
+import { fetchOptions, freeOptOf, freeOption, outputOptions } from "../global-options.ts"
 import { commonOptsOf, runListCommand } from "./support.ts"
 
 const kind = Args.choice(MediaKind.literals.map((k) => [k, k] as const)).pipe(
-  Args.withDescription("미디어 아레나 종류"),
+  Args.withDescription("Media arena kind"),
 )
 
 const categories = Options.boolean("categories").pipe(
   Options.withDefault(false),
-  Options.withDescription("카테고리 정보 포함"),
+  Options.withDescription("Include category info"),
 )
 
 const genres = Options.boolean("genres").pipe(
   Options.withDefault(false),
-  Options.withDescription("장르 정보 포함"),
+  Options.withDescription("Include genre info"),
 )
 
 export const mediaCommand = Command.make(
   "media",
-  { ...dataOptions, kind, categories, genres },
+  { ...outputOptions, ...fetchOptions, ...freeOption, kind, categories, genres },
   (opts) => {
     const mediaOpts: ListMediaOpts = {
       ...commonOptsOf(opts),
@@ -32,4 +32,4 @@ export const mediaCommand = Command.make(
     }
     return runListCommand(opts, summaryFields.mediaModel, listMedia(opts.kind, mediaOpts))
   },
-).pipe(Command.withDescription("미디어 아레나 모델 목록"))
+).pipe(Command.withDescription("Media arena rankings (text-to-image, text-to-video, ...)"))

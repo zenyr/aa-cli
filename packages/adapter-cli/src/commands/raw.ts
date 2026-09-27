@@ -3,14 +3,14 @@ import { rawGet } from "@aa/application"
 import { UsageError } from "@aa/domain"
 import { Args, Command, Options } from "@effect/cli"
 import { Effect } from "effect"
-import { dataOptions } from "../global-options.ts"
+import { fetchOptions, outputOptions } from "../global-options.ts"
 import { commonOptsOf, runRawCommand } from "./support.ts"
 
-const path = Args.text({ name: "path" }).pipe(Args.withDescription("`/api/v2` 기준 상대 경로"))
+const path = Args.text({ name: "path" }).pipe(Args.withDescription("Path relative to `/api/v2`"))
 
 const query = Options.text("query").pipe(
   Options.repeated,
-  Options.withDescription("쿼리 파라미터 `k=v` (반복 가능)"),
+  Options.withDescription("Query parameter `k=v` (repeatable)"),
 )
 
 // `k=v` 문자열 배열을 Record 로 파싱. `=` 가 없으면 UsageError.
@@ -33,9 +33,13 @@ const parseQuery = (
   return Effect.succeed(result)
 }
 
-export const rawCommand = Command.make("raw", { ...dataOptions, path, query }, (opts) => {
-  const effect = parseQuery(opts.query).pipe(
-    Effect.flatMap((parsedQuery) => rawGet(opts.path, parsedQuery, commonOptsOf(opts))),
-  )
-  return runRawCommand(opts, effect)
-}).pipe(Command.withDescription("탈출구: 임의 GET"))
+export const rawCommand = Command.make(
+  "raw",
+  { ...outputOptions, ...fetchOptions, path, query },
+  (opts) => {
+    const effect = parseQuery(opts.query).pipe(
+      Effect.flatMap((parsedQuery) => rawGet(opts.path, parsedQuery, commonOptsOf(opts))),
+    )
+    return runRawCommand(opts, effect)
+  },
+).pipe(Command.withDescription("Escape hatch: arbitrary GET"))

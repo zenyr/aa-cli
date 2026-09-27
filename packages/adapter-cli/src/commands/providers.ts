@@ -15,7 +15,7 @@ import type {
 import { PerfInterval, PerfWindow, UsageError } from "@aa/domain"
 import { Args, Command, Options } from "@effect/cli"
 import { Effect, Option } from "effect"
-import { dataOptions } from "../global-options.ts"
+import { fetchOptions, outputOptions, promptTypeOption } from "../global-options.ts"
 import { commonOptsOf, runItemCommand, runListCommand } from "./support.ts"
 
 const slug = Args.text({ name: "slug" }).pipe(Args.optional)
@@ -23,34 +23,46 @@ const slug = Args.text({ name: "slug" }).pipe(Args.optional)
 // `perf` 또는 `measurements` 리터럴만 허용하는 선택적 트레일링 토큰.
 const mode = Args.text({ name: "mode" }).pipe(
   Args.optional,
-  Args.withDescription("생략하면 단건 조회, 'perf'/'measurements' 는 slug 필요 (commercial)"),
+  Args.withDescription(
+    "Omit for a single lookup; 'perf'/'measurements' require <slug> (commercial)",
+  ),
 )
 
 const allPages = Options.boolean("all-pages").pipe(
   Options.withDefault(false),
-  Options.withDescription("페이지네이션된 결과를 모두 모아서 반환"),
+  Options.withDescription("Collect all paginated results"),
 )
 
 const window = Options.choice("window", PerfWindow.literals).pipe(
   Options.optional,
-  Options.withDescription("perf 조회 기간"),
+  Options.withDescription("perf query window"),
 )
 
 const interval = Options.choice("interval", PerfInterval.literals).pipe(
   Options.optional,
-  Options.withDescription("perf 집계 간격"),
+  Options.withDescription("perf aggregation interval"),
 )
 
 const startDate = Options.text("start-date").pipe(
   Options.optional,
-  Options.withDescription("measurements 시작일 (YYYY-MM-DD)"),
+  Options.withDescription("measurements start date (YYYY-MM-DD)"),
 )
 
 const providerSummaryFields: ReadonlyArray<string> = summaryFields.provider
 
 export const providersCommand = Command.make(
   "providers",
-  { ...dataOptions, slug, mode, allPages, window, interval, startDate },
+  {
+    ...outputOptions,
+    ...fetchOptions,
+    ...promptTypeOption,
+    slug,
+    mode,
+    allPages,
+    window,
+    interval,
+    startDate,
+  },
   (opts) => {
     if (Option.isNone(opts.slug)) {
       if (Option.isSome(opts.mode)) {
@@ -99,4 +111,4 @@ export const providersCommand = Command.make(
     })
     return runItemCommand(opts, providerSummaryFields, Effect.fail(err))
   },
-).pipe(Command.withDescription("provider 목록 / 단건 / 성능 / 측정치"))
+).pipe(Command.withDescription("API providers: list, single lookup, performance, measurements"))
