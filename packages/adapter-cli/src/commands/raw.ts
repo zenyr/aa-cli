@@ -1,4 +1,4 @@
-// `aa raw <path> [--query k=v ...]`: 탈출구 - 임의 GET, 응답 스키마를 강제하지 않는다.
+// `aa-cli raw <path> [--query k=v ...]`: 탈출구 - 임의 GET, 응답 스키마를 강제하지 않는다.
 import { rawGet } from "@aa/application"
 import { UsageError } from "@aa/domain"
 import { Args, Command, Options } from "@effect/cli"

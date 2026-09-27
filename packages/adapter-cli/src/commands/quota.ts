@@ -1,4 +1,4 @@
-// `aa quota`: 캐시된 사용량 한도 상태 (API 요청을 소모하지 않는다).
+// `aa-cli quota`: 캐시된 사용량 한도 상태 (API 요청을 소모하지 않는다).
 import { getQuotaView, toResult } from "@aa/application"
 import { RateLimit, ResponseMeta } from "@aa/domain"
 import { Command } from "@effect/cli"
@@ -36,6 +36,6 @@ export const quotaCommand = Command.make("quota", { ...dataOptions }, (opts) => 
   return runItemCommand(opts, summaryFields, effect)
 }).pipe(
   Command.withDescription(
-    "캐시된 사용량 한도 상태 (요청 소모 없음). 기억된 티어를 즉시 잊게 하려면 aa cache clear --quota",
+    "캐시된 사용량 한도 상태 (요청 소모 없음). 기억된 티어를 즉시 잊게 하려면 aa-cli cache clear --quota",
   ),
 )

@@ -1,4 +1,4 @@
-// `aa model <query> [perf]`: 언어 모델 단건 조회 / 성능 추이 (perf 는 commercial 티어).
+// `aa-cli model <query> [perf]`: 언어 모델 단건 조회 / 성능 추이 (perf 는 commercial 티어).
 import { getLanguageModel, getModelPerformance, summaryFields } from "@aa/application"
 import type { GetLanguageModelOpts, PerfWindowOpts } from "@aa/application"
 import { PerfInterval, PerfWindow, UsageError } from "@aa/domain"
@@ -9,7 +9,7 @@ import { commonOptsOf, runItemCommand } from "./support.ts"
 
 // slug 또는 이름/키워드 질의. 트레일링 `perf` 모드와 구분해야 하므로 공백 포함 질의는 따옴표로 감싼다.
 const slug = Args.text({ name: "query" }).pipe(
-  Args.withDescription('slug 또는 이름 질의, 예: aa model "opus 5.5"'),
+  Args.withDescription('slug 또는 이름 질의, 예: aa-cli model "opus 5.5"'),
 )
 
 // `perf` 리터럴만 허용하는 선택적 트레일링 토큰.
@@ -59,7 +59,7 @@ export const modelCommand = Command.make(
 ).pipe(
   Command.withDescription(
     [
-      '언어 모델 단건 조회 / 성능 추이. 질의에 공백이 있으면 따옴표로 감싼다: aa model "opus 5.5"',
+      '언어 모델 단건 조회 / 성능 추이. 질의에 공백이 있으면 따옴표로 감싼다: aa-cli model "opus 5.5"',
     ].join("\n"),
   ),
 )

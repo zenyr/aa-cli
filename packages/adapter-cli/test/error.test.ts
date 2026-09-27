@@ -23,12 +23,12 @@ describe("formatErrorJson", () => {
 describe("formatErrorHuman", () => {
   it("renders a one-line message plus a hint line", () => {
     const e = new TierError({ message: "pro required", hint: "try --free" })
-    expect(formatErrorHuman(e)).toEqual(["aa: tier: pro required", "hint: try --free"])
+    expect(formatErrorHuman(e)).toEqual(["aa-cli: tier: pro required", "hint: try --free"])
   })
 
   it("omits the hint line when absent", () => {
     const e = new NotFound({ message: "no such slug" })
-    expect(formatErrorHuman(e)).toEqual(["aa: not_found: no such slug"])
+    expect(formatErrorHuman(e)).toEqual(["aa-cli: not_found: no such slug"])
   })
 })
 
@@ -49,7 +49,7 @@ describe("ambiguity errors", () => {
       hint: "candidates: opus-4, opus-4-1, opus-5",
     })
     expect(formatErrorHuman(e)).toEqual([
-      "aa: usage: ambiguous query: opus",
+      "aa-cli: usage: ambiguous query: opus",
       "hint: candidates: opus-4, opus-4-1, opus-5",
     ])
   })
@@ -83,14 +83,14 @@ describe("RateLimited", () => {
       resetAt: 1790000000,
     })
     expect(formatErrorHuman(e)).toEqual([
-      "aa: rate_limited: daily limit reached",
+      "aa-cli: rate_limited: daily limit reached",
       `retry after: 30s (resets ${new Date(1790000000 * 1000).toISOString()})`,
     ])
   })
 
   it("omits the retry-after line when absent", () => {
     const e = new RateLimited({ message: "daily limit reached" })
-    expect(formatErrorHuman(e)).toEqual(["aa: rate_limited: daily limit reached"])
+    expect(formatErrorHuman(e)).toEqual(["aa-cli: rate_limited: daily limit reached"])
   })
 })
 
@@ -98,6 +98,6 @@ describe("formatError", () => {
   it("dispatches on format", () => {
     const e = new NotFound({ message: "x" })
     expect(formatError("json", e)[0]).toContain('"code":"not_found"')
-    expect(formatError("table", e)).toEqual(["aa: not_found: x"])
+    expect(formatError("table", e)).toEqual(["aa-cli: not_found: x"])
   })
 })

@@ -13,7 +13,7 @@
 
 - 세션의 작업 디렉터리가 메인 워크트리가 아닐 수 있다. 경로를 가정하지 말고 저장소 루트는 `git rev-parse --show-toplevel` 로 구한다.
 - 캐시 같은 워크트리 간 공유 상태는 워크트리 안에 두지 않는다.
-  - 개발 캐시는 `scripts/cache-dir.sh` 가 반환하는 경로(`AA_CACHE_DIR`)만 쓴다.
+  - 개발 캐시는 `scripts/cache-dir.sh` 가 반환하는 경로(`AA_CACHE_DIR`)만 쓴다 (`aa-cli` 실행 시 사용하는 경로: `~/.cache/aa-cli`).
   - 새 캐시 경로를 하드코딩하지 않는다.
 - 워크트리의 `.env` 는 메인 워크트리 `.env` 로의 심볼릭 링크다 (`scripts/init-worktree.sh` 가 만든다).
   - 링크가 없으면 `bash scripts/init-worktree.sh` 를 실행한다.

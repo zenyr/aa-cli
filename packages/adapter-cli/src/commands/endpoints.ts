@@ -1,4 +1,4 @@
-// `aa endpoints`: 지원 엔드포인트와 필요 티어 (정적 카탈로그, 요청을 소모하지 않는다).
+// `aa-cli endpoints`: 지원 엔드포인트와 필요 티어 (정적 카탈로그, 요청을 소모하지 않는다).
 import { endpoints, toResult } from "@aa/application"
 import { ResponseMeta } from "@aa/domain"
 import { Command } from "@effect/cli"

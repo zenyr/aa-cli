@@ -1,4 +1,4 @@
-// `aa media <kind> [--free] [--categories|--genres]`: 미디어 아레나 모델 목록.
+// `aa-cli media <kind> [--free] [--categories|--genres]`: 미디어 아레나 모델 목록.
 import { listMedia, summaryFields } from "@aa/application"
 import type { ListMediaOpts } from "@aa/application"
 import { MediaKind } from "@aa/domain"

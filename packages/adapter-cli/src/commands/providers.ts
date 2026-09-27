@@ -1,4 +1,4 @@
-// `aa providers [<slug>] [perf|measurements]`: provider 목록 / 단건 / 성능 / 측정치 (commercial).
+// `aa-cli providers [<slug>] [perf|measurements]`: provider 목록 / 단건 / 성능 / 측정치 (commercial).
 import {
   getProvider,
   getProviderMeasurements,
@@ -56,7 +56,7 @@ export const providersCommand = Command.make(
       if (Option.isSome(opts.mode)) {
         const err = new UsageError({
           message: "'perf'/'measurements' requires <slug>",
-          hint: "aa providers <slug> perf|measurements",
+          hint: "aa-cli providers <slug> perf|measurements",
         })
         return runListCommand(opts, providerSummaryFields, Effect.fail(err))
       }

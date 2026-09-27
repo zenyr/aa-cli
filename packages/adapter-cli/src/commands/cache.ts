@@ -1,4 +1,4 @@
-// `aa cache clear [--quota]`: 로컬 캐시를 비우는 수동 탈출구.
+// `aa-cli cache clear [--quota]`: 로컬 캐시를 비우는 수동 탈출구.
 import { clearCache, toResult } from "@aa/application"
 import { ResponseMeta } from "@aa/domain"
 import { Command, Options } from "@effect/cli"
@@ -32,7 +32,7 @@ const clearCommand = Command.make("clear", { ...dataOptions, quota }, (opts) => 
 const cacheBase = Command.make("cache", {}, () =>
   Effect.gen(function* () {
     const output = yield* Output
-    yield* output.stderr("aa cache: usage: a subcommand is required (see --help)")
+    yield* output.stderr("aa-cli cache: usage: a subcommand is required (see --help)")
     const exit = yield* ExitCode
     yield* Ref.set(exit, 2)
   }),

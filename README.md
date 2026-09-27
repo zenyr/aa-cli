@@ -3,7 +3,7 @@
 [Artificial Analysis Data API](https://artificialanalysis.ai/data-api/docs) 용 CLI. 셸로 작업하는 AI 에이전트가 쓰기 좋게 만드는 것이 1차 목표이고, 사람은 그다음이다.
 
 - 패키지: `@zenyr/aa-cli`
-- 실행 명령: `aa`
+- 실행 명령: `aa-cli`
 - 스택: Bun · Effect.ts · Turborepo · oxlint · oxfmt · lefthook
 
 > 데이터 출처: [Artificial Analysis](https://artificialanalysis.ai/)
@@ -15,11 +15,27 @@ cp .env.example .env   # AA_APIKEY 채우기
 bun install
 ```
 
+API 키는 다음 순서로 찾는다. 위에서 먼저 걸리는 값을 쓴다.
+
+1. `AA_APIKEY` 환경변수
+2. `$AA_CONFIG_FILE` (경로를 직접 지정)
+3. `$XDG_CONFIG_HOME/aa-cli/.env` → `~/.config/aa-cli/.env`
+
+전역으로 링크된 `aa-cli` 는 실행 디렉터리의 `.env` 를 읽지 않으므로(Bun 이 CWD 의 `.env` 만 자동 로드), 저장소 밖에서 쓰려면 설정 파일을 둔다.
+
+```sh
+mkdir -p ~/.config/aa-cli
+printf 'AA_APIKEY=...\n' > ~/.config/aa-cli/.env
+chmod 600 ~/.config/aa-cli/.env
+```
+
+파일이 그룹/전체에 읽기 권한이 열려 있으면(`chmod 600` 이 아니면) 실행 시 stderr 에 경고만 출력하고 계속 진행한다(값은 출력하지 않는다).
+
 ## 모노레포 구조 (헥사고널)
 
 ```
 apps/
-  cli/                 @zenyr/aa-cli        유일한 배포물. bin "aa". 조립(composition root)
+  cli/                 @zenyr/aa-cli        유일한 배포물. bin "aa-cli". 조립(composition root)
 packages/
   domain/              @aa/domain           순수 모델 + 포트 + 에러
   application/         @aa/application      유스케이스
@@ -47,16 +63,16 @@ apps/cli ── 모든 레이어를 Layer 로 조립
 ## 커맨드 (초안)
 
 ```
-aa models [--free] [--prompt-type long] [--all-pages] [--sort -intelligence] [--fields ...]
-aa model <slug> [--prompt-type ...]
-aa model <slug> perf [--window 90d] [--interval weekly]      # commercial
-aa compare <slug> <slug>...                                  # 주요 지표 나란히
-aa providers [<slug>] [perf|measurements]                    # commercial
-aa media <kind> [--free] [--categories|--genres]             # kind: text-to-image, ...
-aa quota                                                     # 캐시된 사용량 한도 상태 (요청 소모 없음)
-aa endpoints                                                 # 지원 엔드포인트와 필요 티어
-aa schema <cmd>                                              # 출력 JSON Schema
-aa raw <path> [--query k=v]                                  # 탈출구: 임의 GET
+aa-cli models [--free] [--prompt-type long] [--all-pages] [--sort -intelligence] [--fields ...]
+aa-cli model <slug> [--prompt-type ...]
+aa-cli model <slug> perf [--window 90d] [--interval weekly]      # commercial
+aa-cli compare <slug> <slug>...                                  # 주요 지표 나란히
+aa-cli providers [<slug>] [perf|measurements]                    # commercial
+aa-cli media <kind> [--free] [--categories|--genres]             # kind: text-to-image, ...
+aa-cli quota                                                     # 캐시된 사용량 한도 상태 (요청 소모 없음)
+aa-cli endpoints                                                 # 지원 엔드포인트와 필요 티어
+aa-cli schema <cmd>                                              # 출력 JSON Schema
+aa-cli raw <path> [--query k=v]                                  # 탈출구: 임의 GET
 ```
 
 공통 옵션:
@@ -123,8 +139,8 @@ table 출력일 때는 마지막 줄(stderr)에 `Data: Artificial Analysis` 를 
 위에서부터 먼저 걸리는 경로를 쓴다.
 
 1. `AA_CACHE_DIR` 환경변수
-2. `$XDG_CACHE_HOME/aa`
-3. `~/.cache/aa`
+2. `$XDG_CACHE_HOME/aa-cli`
+3. `~/.cache/aa-cli`
 
 배포된 CLI는 사용자 전역 경로를 쓰므로 현재 디렉터리와 무관하다.
 
@@ -142,8 +158,8 @@ scripts/cache-dir.sh   # → <메인 워크트리>/.git/aa-cache
 애플리케이션은 마지막으로 관측된 티어("free")를 기억해 pro 전용 엔드포인트 호출을 건너뛴다.
 
 - 이 기억은 다음 실제 요청의 응답 티어로 자동 회복된다. 단, 캐시된 응답이 있으면 TTL 만큼 지연될 수 있다.
-- `aa cache clear --quota`: 기억된 티어/사용량만 즉시 지운다. 다음 요청에서 바로 재감지한다.
-- `aa cache clear`: 응답 캐시와 티어 기억을 모두 지운다.
+- `aa-cli cache clear --quota`: 기억된 티어/사용량만 즉시 지운다. 다음 요청에서 바로 재감지한다.
+- `aa-cli cache clear`: 응답 캐시와 티어 기억을 모두 지운다.
 
 ## 개발
 
@@ -151,7 +167,7 @@ scripts/cache-dir.sh   # → <메인 워크트리>/.git/aa-cache
 bun run check                                   # fmt:check + lint + typecheck + test
 bun run build | typecheck | test                # turbo run <task>
 bun run lint | fmt                              # oxlint / oxfmt (루트에서 한 번에)
-bun run --cwd apps/cli dev -- <args>            # aa 실행 (AA_CACHE_DIR 자동 주입)
+bun run --cwd apps/cli dev -- <args>            # aa-cli 실행 (AA_CACHE_DIR 자동 주입)
 AA_LIVE=1 bun run test                          # 실제 API 호출 테스트 (한도 소모)
 ```
 

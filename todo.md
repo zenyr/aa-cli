@@ -25,8 +25,10 @@
   - [x] 포매터 (json, jsonl, table, tsv, md)
   - [x] 종료 코드
   - [x] 출처 표기
-- [x] `@aa/adapter-cache` + `aa quota` (`AA_CACHE_DIR` → XDG → `~/.cache/aa`)
-- [x] `aa media`, `aa providers`, `aa raw`, `aa schema`, `aa endpoints`
+- [x] `@aa/adapter-cache` + `aa-cli quota` (`AA_CACHE_DIR` → XDG → `~/.cache/aa-cli`)
+- [x] `aa-cli media`, `aa-cli providers`, `aa-cli raw`, `aa-cli schema`, `aa-cli endpoints`
+- [x] 실행 명령 `aa` → `aa-cli` 로 변경 (macOS `/usr/bin/aa` 와 충돌 회피)
+- [x] 전역 설정 파일 지원 (`~/.config/aa-cli/.env`, `AA_CONFIG_FILE`)
 - [ ] 후속 정리
   - [ ] 파이프 출력 시 `--help` 의 ANSI 색 코드 제거 (NO_COLOR/비TTY)
   - [ ] table 헤더가 dot path 전체라 너무 넓음: 짧은 별칭 검토

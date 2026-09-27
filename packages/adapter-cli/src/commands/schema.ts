@@ -1,4 +1,4 @@
-// `aa schema <command> [modifier]`: 해당 커맨드 출력 data 의 JSON Schema.
+// `aa-cli schema <command> [modifier]`: 해당 커맨드 출력 data 의 JSON Schema.
 import { Args, Command } from "@effect/cli"
 import { Effect, Option, Ref } from "effect"
 import { ExitCode } from "../exit-code.ts"

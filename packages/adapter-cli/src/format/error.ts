@@ -33,7 +33,7 @@ export const formatErrorJson = (e: AaError): string =>
   })
 
 export const formatErrorHuman = (e: AaError): ReadonlyArray<string> => {
-  const lines = [`aa: ${errorCodeOf(e)}: ${e.message}`]
+  const lines = [`aa-cli: ${errorCodeOf(e)}: ${e.message}`]
   const hint = hintOf(e)
   if (hint !== undefined) lines.push(`hint: ${hint}`)
   if (e instanceof RateLimited && e.retryAfter !== undefined) {

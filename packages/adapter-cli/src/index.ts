@@ -15,7 +15,7 @@ export { Output, OutputLive } from "./output.ts"
 // `package.json` 을 읽지 않고 고정 버전을 쓴다 (배포 파이프라인이 필요하면 빌드 시점에 주입).
 export const cliVersion = "0.1.0"
 
-const runCli = Command.run(rootCommand, { name: "aa", version: cliVersion })
+const runCli = Command.run(rootCommand, { name: "aa-cli", version: cliVersion })
 
 // argv -> 종료 코드. 실패하지 않는다: `@effect/cli` 검증 오류는 exit 2 (도움말 요청은 0)로 흡수한다.
 export const run = (

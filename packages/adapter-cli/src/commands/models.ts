@@ -1,4 +1,4 @@
-// `aa models`: 언어 모델 목록.
+// `aa-cli models`: 언어 모델 목록.
 import { listLanguageModels, summaryFields, type ListLanguageModelsOpts } from "@aa/application"
 import { Command, Options } from "@effect/cli"
 import { Option } from "effect"

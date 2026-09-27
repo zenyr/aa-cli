@@ -222,7 +222,7 @@ export const findLanguageModels = (
       return yield* Effect.fail(
         new NotFound({
           message: `no match for "${query}"`,
-          hint: `try \`aa find\` with a different keyword`,
+          hint: `try \`aa-cli find\` with a different keyword`,
         }),
       )
     }

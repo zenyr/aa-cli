@@ -112,7 +112,7 @@ export const resolveOne = <A extends Sluggable>(
 
   const ranked = rankCandidates(items, query)
   if (ranked.length === 0) {
-    const hint = `no match for "${query}"; try \`aa find ${query}\``
+    const hint = `no match for "${query}"; try \`aa-cli find ${query}\``
     const near = nearSlugsHint(items, query)
     return Either.left(
       new NotFound({

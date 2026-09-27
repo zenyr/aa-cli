@@ -34,7 +34,7 @@ const makeQuotaCache = (snapshot: QuotaSnapshot): Layer.Layer<Cache> =>
     }),
   )
 
-// 만료된 스냅샷: `aa quota` 의 "롤오버" 알림 검증용.
+// 만료된 스냅샷: `aa-cli quota` 의 "롤오버" 알림 검증용.
 const makeStaleQuotaCache = (): Layer.Layer<Cache> =>
   makeQuotaCache({
     tier: "free",

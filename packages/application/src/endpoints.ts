@@ -1,4 +1,4 @@
-// `aa endpoints` 용 지원 엔드포인트 카탈로그. SUMMARY.md 엔드포인트 표를 그대로 옮긴다.
+// `aa-cli endpoints` 용 지원 엔드포인트 카탈로그. SUMMARY.md 엔드포인트 표를 그대로 옮긴다.
 export interface EndpointInfo {
   readonly method: "GET" | "POST"
   readonly path: string

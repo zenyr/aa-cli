@@ -6,7 +6,7 @@ import { tmpdir } from "node:os"
 const readEnv = (name: string): Effect.Effect<Option.Option<string>> =>
   Config.string(name).pipe(Config.option, Effect.orDie)
 
-// 캐시 디렉터리 경로를 결정한다: AA_CACHE_DIR -> $XDG_CACHE_HOME/aa -> $HOME/.cache/aa -> os tmpdir/aa.
+// 캐시 디렉터리 경로를 결정한다: AA_CACHE_DIR -> $XDG_CACHE_HOME/aa-cli -> $HOME/.cache/aa-cli -> os tmpdir/aa-cli.
 export const resolveCacheDir: Effect.Effect<string, never, Path.Path> = Effect.gen(function* () {
   const path = yield* Path.Path
 
@@ -14,10 +14,10 @@ export const resolveCacheDir: Effect.Effect<string, never, Path.Path> = Effect.g
   if (aaCacheDir._tag === "Some") return aaCacheDir.value
 
   const xdgCacheHome = yield* readEnv("XDG_CACHE_HOME")
-  if (xdgCacheHome._tag === "Some") return path.join(xdgCacheHome.value, "aa")
+  if (xdgCacheHome._tag === "Some") return path.join(xdgCacheHome.value, "aa-cli")
 
   const home = yield* readEnv("HOME")
-  if (home._tag === "Some") return path.join(home.value, ".cache", "aa")
+  if (home._tag === "Some") return path.join(home.value, ".cache", "aa-cli")
 
-  return path.join(tmpdir(), "aa")
+  return path.join(tmpdir(), "aa-cli")
 })

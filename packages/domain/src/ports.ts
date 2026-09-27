@@ -26,7 +26,7 @@ export interface CacheEntry {
   readonly storedAt: number
 }
 
-// 마지막으로 관측된 사용량 한도 상태 (`aa quota` 용). API 호출을 새로 소모하지 않는다.
+// 마지막으로 관측된 사용량 한도 상태 (`aa-cli quota` 용). API 호출을 새로 소모하지 않는다.
 export interface QuotaSnapshot {
   readonly tier: Tier
   readonly rateLimit: RateLimit
