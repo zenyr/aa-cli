@@ -139,6 +139,12 @@ scripts/cache-dir.sh   # → <메인 워크트리>/.git/aa-cache
 - 저장소 스크립트(`bun run dev`, 라이브 테스트 등)는 이 값을 `AA_CACHE_DIR` 로 주입한다.
 - 캐시를 비우려면: `rm -rf "$(scripts/cache-dir.sh)"`
 
+애플리케이션은 마지막으로 관측된 티어("free")를 기억해 pro 전용 엔드포인트 호출을 건너뛴다.
+
+- 이 기억은 다음 실제 요청의 응답 티어로 자동 회복된다. 단, 캐시된 응답이 있으면 TTL 만큼 지연될 수 있다.
+- `aa cache clear --quota`: 기억된 티어/사용량만 즉시 지운다. 다음 요청에서 바로 재감지한다.
+- `aa cache clear`: 응답 캐시와 티어 기억을 모두 지운다.
+
 ## 개발
 
 ```sh
