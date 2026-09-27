@@ -3,6 +3,7 @@
 import {
   commandHelpSpecs,
   groupHelpSpecs,
+  flagDisplay,
   optionGroupFlags,
   type CommandHelpSpec,
   type GroupHelpSpec,
@@ -49,7 +50,9 @@ export const resolveHelpTarget = (userArgs: ReadonlyArray<string>): HelpTarget |
 }
 
 const optionLines = (spec: CommandHelpSpec): ReadonlyArray<string> => {
-  const groupFlagLines = spec.optionGroups.map((g) => `  ${optionGroupFlags[g].join("   ")}`)
+  const groupFlagLines = spec.optionGroups.map(
+    (g) => `  ${optionGroupFlags[g].map((f) => flagDisplay[f] ?? f).join("   ")}`,
+  )
   const ownFlagLine =
     spec.ownOptions.length === 0 ? [] : [`  ${spec.ownOptions.map((o) => o.display).join("   ")}`]
   return [...groupFlagLines, ...ownFlagLine]

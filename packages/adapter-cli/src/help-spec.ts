@@ -27,6 +27,18 @@ export const optionGroupFlags: Record<OptionGroup, ReadonlyArray<string>> = {
   promptType: promptTypeOptionFlags,
 }
 
+// 공통 플래그를 도움말에 보여줄 때 붙이는 값 힌트.
+export const flagDisplay: Readonly<Record<string, string>> = {
+  "--format": "--format json|jsonl|table|tsv|md",
+  "--fields": "--fields a,b.c",
+  "--limit": "--limit N",
+  "--sort": "--sort -field",
+  "--filter": "--filter expr...",
+  "--ttl": "--ttl SECONDS",
+  "--prompt-type":
+    "--prompt-type medium|long|100k|vision_single_image|medium_coding|medium_parallel",
+}
+
 // 커맨드 고유 옵션 하나: 도움말에 보여줄 플래그 이름과 한 줄 표시 텍스트.
 export interface OwnOption {
   readonly flag: string
