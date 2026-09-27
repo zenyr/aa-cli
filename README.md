@@ -109,7 +109,10 @@ table 출력일 때는 마지막 줄(stderr)에 `Data: Artificial Analysis` 를 
 
 ## 워크트리
 
-새 워크트리를 처음 열 때 개발툴이 `bash scripts/init-worktree.sh` 를 실행한다. 이 스크립트는 메인 워크트리의 `.env` 를 현재 워크트리에 심볼릭 링크로 연결한다.
+새 워크트리를 처음 열 때 개발툴이 `bash scripts/init-worktree.sh` 를 실행한다. 이 스크립트는 두 가지를 한다.
+
+1. 메인 워크트리의 `.env` 를 현재 워크트리에 심볼릭 링크로 연결한다.
+2. `bun install --frozen-lockfile` 로 의존성을 설치한다 (lefthook 훅 설치 포함).
 
 - 여러 번 실행해도 안전하다.
 - 메인 워크트리에서 실행하면 아무것도 하지 않는다.

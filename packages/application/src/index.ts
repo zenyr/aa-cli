@@ -1,2 +1,2 @@
 // 애플리케이션: 유스케이스
-export {}
+export const layer = "application" as const
