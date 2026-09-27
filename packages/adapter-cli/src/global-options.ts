@@ -1,4 +1,5 @@
 // 데이터 커맨드 공통 CLI 옵션.
+import { PromptType } from "@aa/domain"
 import { Options } from "@effect/cli"
 import { Option } from "effect"
 import type { Format } from "./format/index.ts"
@@ -55,9 +56,9 @@ const free = Options.boolean("free").pipe(
   Options.withDescription("free 티어 응답 강제 조회"),
 )
 
-const promptType = Options.text("prompt-type").pipe(
+const promptType = Options.choice("prompt-type", PromptType.literals).pipe(
   Options.optional,
-  Options.withDescription("평가 프롬프트 종류, 예: long"),
+  Options.withDescription("평가 프롬프트 종류"),
 )
 
 // 데이터 조회 커맨드에서 공통으로 쓰는 옵션 묶음.
@@ -88,7 +89,7 @@ export type DataOptionsValue = {
   readonly offline: boolean
   readonly ttl: Option.Option<number>
   readonly free: boolean
-  readonly promptType: Option.Option<string>
+  readonly promptType: Option.Option<PromptType>
 }
 
 // `--format` / `--json` / TTY 감지를 하나의 규칙으로 합친다.

@@ -1,4 +1,4 @@
-// `aa schema <command>` 용: 커맨드 이름 -> 출력 data 의 JSON Schema.
+// `aa schema <command> [modifier]` 용: 커맨드 이름 -> 출력 data 의 JSON Schema.
 import { LanguageModel, MediaModel, Provider } from "@aa/domain"
 import { JSONSchema, Schema } from "effect"
 
@@ -9,9 +9,10 @@ const providersSchema = JSONSchema.make(Schema.Array(Provider))
 const providerSchema = JSONSchema.make(Provider)
 const unknownSchema = {} as const
 
-// commands.ts 의 커맨드 이름과 1:1 로 맞춘다. 목록에 없는 커맨드(quota, endpoints, raw 등)는 `{}`.
-export const schemaFor = (command: string): unknown => {
-  switch (command) {
+// `aa schema <command> [modifier]` 의 두 토큰을 합친 키. 예: `schemaFor("model", "perf")`.
+export const schemaFor = (command: string, modifier?: string): unknown => {
+  const key = modifier === undefined ? command : `${command} ${modifier}`
+  switch (key) {
     case "models":
       return modelsSchema
     case "model":
@@ -19,15 +20,19 @@ export const schemaFor = (command: string): unknown => {
     case "model perf":
       return unknownSchema
     case "compare":
-      return unknownSchema
+      return modelsSchema
     case "media":
       return mediaSchema
     case "providers":
       return providersSchema
-    case "provider":
+    case "providers get":
       return providerSchema
     case "providers perf":
     case "providers measurements":
+      return unknownSchema
+    case "quota":
+    case "endpoints":
+    case "raw":
       return unknownSchema
     default:
       return unknownSchema
@@ -41,7 +46,10 @@ export const knownSchemaCommands: ReadonlyArray<string> = [
   "compare",
   "media",
   "providers",
-  "provider",
+  "providers get",
   "providers perf",
   "providers measurements",
+  "quota",
+  "endpoints",
+  "raw",
 ]
