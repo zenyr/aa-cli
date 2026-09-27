@@ -81,7 +81,10 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
     summary: 'One language model. Query may be a slug or a name, e.g. "opus 5.5".',
     optionGroups: ["output", "fetch", "promptType"],
     ownOptions: [],
-    examples: ['aa-cli show "opus 5.5"', "aa-cli show sample-model --fields slug,pricing.input"],
+    examples: [
+      'aa-cli show "opus 5.5"',
+      "aa-cli show claude-opus-5-5 --fields slug,pricing.price_1m_input_tokens",
+    ],
   },
   {
     path: ["perf"],
