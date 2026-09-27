@@ -1,6 +1,7 @@
 import { AaApi, Cache, ItemEnvelope, LanguageModel, ListEnvelope, NotFound } from "@aa/domain"
 import type { AaError, PerfInterval, PerfWindow, PromptType, ResponseMeta } from "@aa/domain"
-import { Effect, Either, Option, Schema } from "effect"
+import { Effect, Either, Schema } from "effect"
+import { isKnownFreeTier } from "./quota.ts"
 import { cachedGet } from "./cached.ts"
 import { collectAllPages } from "./paging.ts"
 import { rankCandidates, resolveOneEffect } from "./resolve.ts"
@@ -66,8 +67,7 @@ export const listLanguageModels = (
       return toResult(r.data, r.meta)
     }
 
-    const knownQuota = yield* (yield* Cache).getRateLimit()
-    if (o.free === undefined && Option.isSome(knownQuota) && knownQuota.value.tier === "free") {
+    if (o.free === undefined && (yield* isKnownFreeTier)) {
       const r = yield* attempt("/language/models/free")
       return toResult(r.data, r.meta)
     }
@@ -110,8 +110,7 @@ export const getLanguageModel = (
   o: GetLanguageModelOpts,
 ): Effect.Effect<Result<LanguageModel>, AaError, AaApi | Cache> =>
   Effect.gen(function* () {
-    const knownQuota = yield* (yield* Cache).getRateLimit()
-    const isFreeTier = Option.isSome(knownQuota) && knownQuota.value.tier === "free"
+    const isFreeTier = yield* isKnownFreeTier
     const isExactSlug = /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(query)
 
     const viaList = (extraNotices: ReadonlyArray<string>) =>

@@ -2,6 +2,7 @@ import { AaApi, Cache, ListEnvelope, MediaKind, MediaModel, mediaKindPath } from
 import type { AaError } from "@aa/domain"
 import { Effect, Either } from "effect"
 import { cachedGet } from "./cached.ts"
+import { isKnownFreeTier } from "./quota.ts"
 import { resolveCacheMode, resolveTtlSeconds, toResult } from "./result.ts"
 import type { CommonOpts, Result } from "./result.ts"
 
@@ -11,7 +12,7 @@ export interface ListMediaOpts extends CommonOpts {
   readonly genres?: boolean
 }
 
-// pro 경로가 TierError 로 실패하면 `<path>/free` 로 재시도하고 알림을 남긴다.
+// 티어가 free 로 알려져 있으면 바로 `/free` 로, 아니면 pro 경로가 TierError 로 실패하면 `<path>/free` 로 재시도하고 알림을 남긴다.
 export const listMedia = (
   kind: MediaKind,
   o: ListMediaOpts,
@@ -28,7 +29,7 @@ export const listMedia = (
 
     const attempt = (path: string) => cachedGet({ path, query, schema, cacheMode, ttlSeconds })
 
-    if (o.free === true) {
+    if (o.free === true || (o.free === undefined && (yield* isKnownFreeTier))) {
       const r = yield* attempt(`${basePath}/free`)
       return toResult(r.body.data, r.meta)
     }

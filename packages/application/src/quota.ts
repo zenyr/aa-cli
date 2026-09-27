@@ -67,3 +67,8 @@ export const getQuotaView = (): Effect.Effect<QuotaView, never, Cache> =>
       stale: rolledOver,
     }
   })
+
+// 마지막으로 관측한 티어가 free 인지. pro 엔드포인트 시도를 건너뛸 때 쓴다.
+export const isKnownFreeTier: Effect.Effect<boolean, never, Cache> = Effect.flatMap(Cache, (c) =>
+  Effect.map(c.getRateLimit(), (q) => Option.isSome(q) && q.value.tier === "free"),
+)
