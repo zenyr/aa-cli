@@ -1,6 +1,6 @@
 import { AaApi, Cache, TierError } from "@aa/domain"
 import type { AaApiRequest, AaError, CacheEntry, QuotaSnapshot, ResponseMeta } from "@aa/domain"
-import { Effect, Layer, Option, Schema } from "effect"
+import { Clock, Effect, Layer, Option, Schema } from "effect"
 
 // 테스트용 인메모리 AaApi: path 별로 등록된 핸들러를 그대로 호출한다.
 export type FakeHandler = (
@@ -47,8 +47,9 @@ export const fakeCacheLayer = (state: FakeCacheState) =>
   Layer.succeed(Cache, {
     get: (key: string) => Effect.succeed(Option.fromNullable(state.store.get(key))),
     set: (key: string, value: unknown, _ttlSeconds: number) =>
-      Effect.sync(() => {
-        state.store.set(key, { value, storedAt: Date.now() })
+      Effect.gen(function* () {
+        const storedAt = yield* Clock.currentTimeMillis
+        state.store.set(key, { value, storedAt })
       }),
     clear: () =>
       Effect.sync(() => {

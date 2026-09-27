@@ -1,4 +1,4 @@
-import { TierError } from "@aa/domain"
+import { RateLimit, TierError } from "@aa/domain"
 import { Effect, Layer, Option } from "effect"
 import { describe, expect, it } from "bun:test"
 import {
@@ -108,6 +108,36 @@ describe("listLanguageModels", () => {
     expect(result.data[0]?.slug).toBe("a")
     expect(result.notices.length).toBe(0)
     expect(proCalls).toBe(0)
+  })
+
+  it("learns free tier from a 403 with tier+rateLimit, then skips pro on the next list call", async () => {
+    const apiState = makeFakeApiState()
+    let proCalls = 0
+    registerHandler(apiState, "/language/models", () => {
+      proCalls += 1
+      return Effect.fail(
+        new TierError({
+          message: "pro required",
+          status: 403,
+          tier: "free",
+          rateLimit: new RateLimit({ limit: 100, remaining: 90, reset: 1790000000 }),
+        }),
+      )
+    })
+    registerHandler(apiState, "/language/models/free", () =>
+      Effect.succeed({ body: { tier: "free", data: [model("a", 10)] }, meta: okMeta() }),
+    )
+    const cacheState = makeFakeCacheState()
+    const layer = Layer.mergeAll(fakeApiLayer(apiState), fakeCacheLayer(cacheState))
+
+    const first = await Effect.runPromise(Effect.provide(listLanguageModels({}), layer))
+    expect(first.data[0]?.slug).toBe("a")
+    expect(proCalls).toBe(1)
+    expect(Option.isSome(cacheState.quota)).toBe(true)
+
+    const second = await Effect.runPromise(Effect.provide(listLanguageModels({}), layer))
+    expect(second.data[0]?.slug).toBe("a")
+    expect(proCalls).toBe(1)
   })
 
   it("defaults allPages to true when page is not given", async () => {
