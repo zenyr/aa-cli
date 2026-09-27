@@ -63,15 +63,16 @@ apps/cli ── 모든 레이어를 Layer 로 조립
 ## 커맨드 (초안)
 
 ```
-aa-cli models [--free] [--prompt-type long] [--all-pages] [--sort -intelligence] [--fields ...]
-aa-cli model <slug> [--prompt-type ...]
-aa-cli model <slug> perf [--window 90d] [--interval weekly]      # commercial
+aa-cli find <words...>                                           # 이름/키워드로 언어 모델 검색
+aa-cli show <query> [--prompt-type ...]                          # 언어 모델 단건 조회
+aa-cli perf <query> [--window 90d] [--interval weekly]           # commercial, 성능 추이
 aa-cli compare <slug> <slug>...                                  # 주요 지표 나란히
-aa-cli providers [<slug>] [perf|measurements]                    # commercial
+aa-cli list [--free] [--prompt-type long] [--all-pages] [--sort -intelligence] [--fields ...]
+aa-cli providers list|show|perf|measurements <slug>              # commercial
 aa-cli media <kind> [--free] [--categories|--genres]             # kind: text-to-image, ...
 aa-cli quota                                                     # 캐시된 사용량 한도 상태 (요청 소모 없음)
 aa-cli endpoints                                                 # 지원 엔드포인트와 필요 티어
-aa-cli schema <cmd>                                              # 출력 JSON Schema
+aa-cli schema <command...>                                       # 출력 JSON Schema
 aa-cli raw <path> [--query k=v]                                  # 탈출구: 임의 GET
 ```
 
