@@ -22,20 +22,7 @@ const base = Command.make("aa-cli", {}, () =>
     const exit = yield* ExitCode
     yield* Ref.set(exit, 2)
   }),
-).pipe(
-  Command.withDescription(
-    [
-      "Artificial Analysis Data API CLI",
-      "",
-      "예:",
-      "  aa-cli find opus 5.5",
-      '  aa-cli compare "opus 5.5" "opus 5" --fields slug,pricing.price_1m_input_tokens',
-      "  aa-cli models --sort -evaluations.artificial_analysis_intelligence_index --limit 10",
-      "  aa-cli quota",
-      "  aa-cli cache clear --quota",
-    ].join("\n"),
-  ),
-)
+).pipe(Command.withDescription("Artificial Analysis Data API for agents and humans"))
 
 export const rootCommand = base.pipe(
   Command.withSubcommands([
