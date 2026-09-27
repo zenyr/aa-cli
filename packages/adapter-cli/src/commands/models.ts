@@ -2,7 +2,7 @@
 import { listLanguageModels, summaryFields, type ListLanguageModelsOpts } from "@aa/application"
 import { Command, Options } from "@effect/cli"
 import { Option } from "effect"
-import { dataOptions } from "../global-options.ts"
+import { dataOptions, freeOptOf } from "../global-options.ts"
 import { commonOptsOf, runListCommand } from "./support.ts"
 
 const allPages = Options.boolean("all-pages").pipe(
@@ -15,7 +15,7 @@ const page = Options.integer("page").pipe(Options.optional, Options.withDescript
 export const modelsCommand = Command.make("models", { ...dataOptions, allPages, page }, (opts) => {
   const listOpts: ListLanguageModelsOpts = {
     ...commonOptsOf(opts),
-    free: opts.free,
+    ...freeOptOf(opts),
     allPages: opts.allPages,
     ...(Option.isSome(opts.promptType) ? { promptType: opts.promptType.value } : {}),
     ...(Option.isSome(opts.page) ? { page: opts.page.value } : {}),

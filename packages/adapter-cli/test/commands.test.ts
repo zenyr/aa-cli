@@ -14,18 +14,13 @@ import {
   type FakeAaApiHandler,
 } from "./fixtures.ts"
 
-// 만료된 rate-limit 스냅샷이 이미 든 Cache. `aa quota` 의 "롤오버" 알림을 검증할 때 쓴다.
-const makeStaleQuotaCache = (): Layer.Layer<Cache> =>
+// rate-limit 스냅샷이 이미 든 Cache.
+const makeQuotaCache = (snapshot: QuotaSnapshot): Layer.Layer<Cache> =>
   Layer.effect(
     Cache,
     Effect.gen(function* () {
       const store = yield* Ref.make(new Map<string, { value: unknown; storedAt: number }>())
-      const staleSnapshot: QuotaSnapshot = {
-        tier: "free",
-        rateLimit: new RateLimit({ limit: 100, remaining: 0, reset: 1 }),
-        observedAt: 1000,
-      }
-      const rateLimit = yield* Ref.make(Option.some(staleSnapshot))
+      const rateLimit = yield* Ref.make(Option.some(snapshot))
       return {
         get: (key: string) =>
           Ref.get(store).pipe(Effect.map((m) => Option.fromNullable(m.get(key)))),
@@ -38,6 +33,14 @@ const makeStaleQuotaCache = (): Layer.Layer<Cache> =>
       }
     }),
   )
+
+// 만료된 스냅샷: `aa quota` 의 "롤오버" 알림 검증용.
+const makeStaleQuotaCache = (): Layer.Layer<Cache> =>
+  makeQuotaCache({
+    tier: "free",
+    rateLimit: new RateLimit({ limit: 100, remaining: 0, reset: 1 }),
+    observedAt: 1000,
+  })
 
 const secondModel = new LanguageModel({
   id: "m2",
@@ -268,5 +271,41 @@ describe("aa (no subcommand)", () => {
     const { captured, exitCode } = runCli([], {})
     expect(exitCode).toBe(2)
     expect(captured.stderr.length).toBeGreaterThan(0)
+  })
+})
+
+describe("tier memory", () => {
+  it("never calls pro endpoints when the remembered tier is free and --free is absent", () => {
+    let proCalls = 0
+    const api = makeFakeAaApi({
+      "/language/models": () => {
+        proCalls += 1
+        return new TierError({ message: "pro only", status: 403 })
+      },
+      "/language/models/free": () => ({ tier: "free", data: [sampleModel] }),
+      "/media/text-to-image/models": () => {
+        proCalls += 1
+        return new TierError({ message: "pro only", status: 403 })
+      },
+      "/media/text-to-image/models/free": () => ({ tier: "free", data: [] }),
+    })
+    const freshFree = makeQuotaCache({
+      tier: "free",
+      rateLimit: new RateLimit({ limit: 100, remaining: 50, reset: 4_000_000_000 }),
+      observedAt: 1000,
+    })
+    const argvs = [
+      ["models", "--json"],
+      ["find", sampleModel.slug, "--json"],
+      ["compare", sampleModel.slug, sampleModel.slug, "--json"],
+      ["media", "text-to-image", "--json"],
+    ]
+    for (const argv of argvs) {
+      const { layer: outputLayer } = makeCapturingOutput()
+      const layer = Layer.mergeAll(api, freshFree, outputLayer, BunContext.layer)
+      const exitCode = Effect.runSync(run(["bun", "aa", ...argv]).pipe(Effect.provide(layer)))
+      expect(exitCode).toBe(0)
+    }
+    expect(proCalls).toBe(0)
   })
 })

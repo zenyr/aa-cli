@@ -105,3 +105,7 @@ export const resolveCacheMode = (v: DataOptionsValue): "use" | "bypass" | "only"
   if (v.noCache) return "bypass"
   return "use"
 }
+
+// `--free` 가 없으면 키를 비워서 application 의 티어 기억/폴백이 동작하게 한다.
+export const freeOptOf = (v: DataOptionsValue): { readonly free?: true } =>
+  v.free ? { free: true } : {}

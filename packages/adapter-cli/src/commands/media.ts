@@ -3,7 +3,7 @@ import { listMedia, summaryFields } from "@aa/application"
 import type { ListMediaOpts } from "@aa/application"
 import { MediaKind } from "@aa/domain"
 import { Args, Command, Options } from "@effect/cli"
-import { dataOptions } from "../global-options.ts"
+import { dataOptions, freeOptOf } from "../global-options.ts"
 import { commonOptsOf, runListCommand } from "./support.ts"
 
 const kind = Args.choice(MediaKind.literals.map((k) => [k, k] as const)).pipe(
@@ -26,7 +26,7 @@ export const mediaCommand = Command.make(
   (opts) => {
     const mediaOpts: ListMediaOpts = {
       ...commonOptsOf(opts),
-      free: opts.free,
+      ...freeOptOf(opts),
       categories: opts.categories,
       genres: opts.genres,
     }
