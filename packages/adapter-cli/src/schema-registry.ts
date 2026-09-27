@@ -1,4 +1,4 @@
-// `aa-cli schema <command> [modifier]` 용: 커맨드 이름 -> 출력 data 의 JSON Schema.
+// `aa-cli schema <command...>` 용: 커맨드 경로 -> 출력 data 의 JSON Schema.
 import { LanguageModel, MediaModel, Provider } from "@aa/domain"
 import { JSONSchema, Schema } from "effect"
 
@@ -9,15 +9,15 @@ const providersSchema = JSONSchema.make(Schema.Array(Provider))
 const providerSchema = JSONSchema.make(Provider)
 const unknownSchema = {} as const
 
-// `aa-cli schema <command> [modifier]` 의 두 토큰을 합친 키. 예: `schemaFor("model", "perf")`.
-export const schemaFor = (command: string, modifier?: string): unknown => {
-  const key = modifier === undefined ? command : `${command} ${modifier}`
+// `aa-cli schema <command...>` 의 커맨드 경로를 합친 키. 예: `schemaFor(["providers", "show"])`.
+export const schemaFor = (path: ReadonlyArray<string>): unknown => {
+  const key = path.join(" ")
   switch (key) {
-    case "models":
+    case "list":
       return modelsSchema
-    case "model":
+    case "show":
       return modelSchema
-    case "model perf":
+    case "perf":
       return unknownSchema
     case "compare":
       return modelsSchema
@@ -25,9 +25,9 @@ export const schemaFor = (command: string, modifier?: string): unknown => {
       return modelsSchema
     case "media":
       return mediaSchema
-    case "providers":
+    case "providers list":
       return providersSchema
-    case "providers get":
+    case "providers show":
       return providerSchema
     case "providers perf":
     case "providers measurements":
@@ -43,14 +43,14 @@ export const schemaFor = (command: string, modifier?: string): unknown => {
 }
 
 export const knownSchemaCommands: ReadonlyArray<string> = [
-  "models",
-  "model",
-  "model perf",
+  "list",
+  "show",
+  "perf",
   "compare",
   "find",
   "media",
-  "providers",
-  "providers get",
+  "providers list",
+  "providers show",
   "providers perf",
   "providers measurements",
   "quota",

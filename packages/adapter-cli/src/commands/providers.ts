@@ -1,4 +1,4 @@
-// `aa-cli providers [<slug>] [perf|measurements]`: provider 목록 / 단건 / 성능 / 측정치 (commercial).
+// `aa-cli providers list|show|perf|measurements`: API provider 목록/단건/성능/측정치 (commercial).
 import {
   getProvider,
   getProviderMeasurements,
@@ -12,26 +12,43 @@ import type {
   ProviderMeasurementsOpts,
   ProviderPerfOpts,
 } from "@aa/application"
-import { PerfInterval, PerfWindow, UsageError } from "@aa/domain"
+import { PerfInterval, PerfWindow } from "@aa/domain"
 import { Args, Command, Options } from "@effect/cli"
-import { Effect, Option } from "effect"
+import { Effect, Option, Ref } from "effect"
 import { fetchOptions, outputOptions, promptTypeOption } from "../global-options.ts"
+import { ExitCode } from "../exit-code.ts"
+import { Output } from "../output.ts"
 import { commonOptsOf, runItemCommand, runListCommand } from "./support.ts"
 
-const slug = Args.text({ name: "slug" }).pipe(Args.optional)
-
-// `perf` 또는 `measurements` 리터럴만 허용하는 선택적 트레일링 토큰.
-const mode = Args.text({ name: "mode" }).pipe(
-  Args.optional,
-  Args.withDescription(
-    "Omit for a single lookup; 'perf'/'measurements' require <slug> (commercial)",
-  ),
-)
+const providerSummaryFields: ReadonlyArray<string> = summaryFields.provider
 
 const allPages = Options.boolean("all-pages").pipe(
   Options.withDefault(false),
   Options.withDescription("Collect all paginated results"),
 )
+
+const listCommand = Command.make(
+  "list",
+  { ...outputOptions, ...fetchOptions, ...promptTypeOption, allPages },
+  (opts) => {
+    const listOpts: ListProvidersOpts = { ...commonOptsOf(opts), allPages: opts.allPages }
+    return runListCommand(opts, providerSummaryFields, listProviders(listOpts))
+  },
+).pipe(Command.withDescription("List API providers"))
+
+const slug = Args.text({ name: "slug" }).pipe(Args.withDescription("Provider slug"))
+
+const showCommand = Command.make(
+  "show",
+  { ...outputOptions, ...fetchOptions, ...promptTypeOption, slug },
+  (opts) => {
+    const getOpts: GetProviderOpts = {
+      ...commonOptsOf(opts),
+      ...(Option.isSome(opts.promptType) ? { promptType: opts.promptType.value } : {}),
+    }
+    return runItemCommand(opts, providerSummaryFields, getProvider(opts.slug, getOpts))
+  },
+).pipe(Command.withDescription("One API provider"))
 
 const window = Options.choice("window", PerfWindow.literals).pipe(
   Options.optional,
@@ -43,72 +60,49 @@ const interval = Options.choice("interval", PerfInterval.literals).pipe(
   Options.withDescription("perf aggregation interval"),
 )
 
+const perfCommand = Command.make(
+  "perf",
+  { ...outputOptions, ...fetchOptions, ...promptTypeOption, slug, window, interval },
+  (opts) => {
+    const perfOpts: ProviderPerfOpts = {
+      ...commonOptsOf(opts),
+      ...(Option.isSome(opts.window) ? { window: opts.window.value } : {}),
+      ...(Option.isSome(opts.interval) ? { interval: opts.interval.value } : {}),
+      ...(Option.isSome(opts.promptType) ? { promptType: opts.promptType.value } : {}),
+    }
+    return runItemCommand(opts, [], getProviderPerformance(opts.slug, perfOpts))
+  },
+).pipe(Command.withDescription("Provider performance history over time (commercial)"))
+
 const startDate = Options.text("start-date").pipe(
   Options.optional,
   Options.withDescription("measurements start date (YYYY-MM-DD)"),
 )
 
-const providerSummaryFields: ReadonlyArray<string> = summaryFields.provider
-
-export const providersCommand = Command.make(
-  "providers",
-  {
-    ...outputOptions,
-    ...fetchOptions,
-    ...promptTypeOption,
-    slug,
-    mode,
-    allPages,
-    window,
-    interval,
-    startDate,
-  },
+const measurementsCommand = Command.make(
+  "measurements",
+  { ...outputOptions, ...fetchOptions, ...promptTypeOption, slug, startDate },
   (opts) => {
-    if (Option.isNone(opts.slug)) {
-      if (Option.isSome(opts.mode)) {
-        const err = new UsageError({
-          message: "'perf'/'measurements' requires <slug>",
-          hint: "aa-cli providers <slug> perf|measurements",
-        })
-        return runListCommand(opts, providerSummaryFields, Effect.fail(err))
-      }
-      const listOpts: ListProvidersOpts = { ...commonOptsOf(opts), allPages: opts.allPages }
-      return runListCommand(opts, providerSummaryFields, listProviders(listOpts))
+    const measurementsOpts: ProviderMeasurementsOpts = {
+      ...commonOptsOf(opts),
+      ...(Option.isSome(opts.promptType) ? { promptType: opts.promptType.value } : {}),
+      ...(Option.isSome(opts.startDate) ? { startDate: opts.startDate.value } : {}),
     }
-
-    const providerSlug = opts.slug.value
-
-    if (Option.isNone(opts.mode)) {
-      const getOpts: GetProviderOpts = {
-        ...commonOptsOf(opts),
-        ...(Option.isSome(opts.promptType) ? { promptType: opts.promptType.value } : {}),
-      }
-      return runItemCommand(opts, providerSummaryFields, getProvider(providerSlug, getOpts))
-    }
-
-    if (opts.mode.value === "perf") {
-      const perfOpts: ProviderPerfOpts = {
-        ...commonOptsOf(opts),
-        ...(Option.isSome(opts.window) ? { window: opts.window.value } : {}),
-        ...(Option.isSome(opts.interval) ? { interval: opts.interval.value } : {}),
-        ...(Option.isSome(opts.promptType) ? { promptType: opts.promptType.value } : {}),
-      }
-      return runItemCommand(opts, [], getProviderPerformance(providerSlug, perfOpts))
-    }
-
-    if (opts.mode.value === "measurements") {
-      const measurementsOpts: ProviderMeasurementsOpts = {
-        ...commonOptsOf(opts),
-        ...(Option.isSome(opts.promptType) ? { promptType: opts.promptType.value } : {}),
-        ...(Option.isSome(opts.startDate) ? { startDate: opts.startDate.value } : {}),
-      }
-      return runItemCommand(opts, [], getProviderMeasurements(providerSlug, measurementsOpts))
-    }
-
-    const err = new UsageError({
-      message: `invalid trailing argument: ${opts.mode.value}`,
-      hint: "the only supported trailing arguments are 'perf' and 'measurements'",
-    })
-    return runItemCommand(opts, providerSummaryFields, Effect.fail(err))
+    return runItemCommand(opts, [], getProviderMeasurements(opts.slug, measurementsOpts))
   },
+).pipe(
+  Command.withDescription("Raw provider measurements, requires per-account approval (commercial)"),
+)
+
+const providersBase = Command.make("providers", {}, () =>
+  Effect.gen(function* () {
+    const output = yield* Output
+    yield* output.stderr("aa-cli providers: usage: a subcommand is required (see --help)")
+    const exit = yield* ExitCode
+    yield* Ref.set(exit, 2)
+  }),
 ).pipe(Command.withDescription("API providers: list, single lookup, performance, measurements"))
+
+export const providersCommand = providersBase.pipe(
+  Command.withSubcommands([listCommand, showCommand, perfCommand, measurementsCommand]),
+)

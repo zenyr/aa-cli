@@ -65,9 +65,9 @@ const runCli = (argv: ReadonlyArray<string>, handlers: Record<string, FakeAaApiH
   return { captured, exitCode }
 }
 
-describe("aa models", () => {
+describe("aa list", () => {
   it("lists language models as json by default (non-TTY)", () => {
-    const { captured, exitCode } = runCli(["models"], {
+    const { captured, exitCode } = runCli(["list"], {
       "/language/models": () => ({ tier: "free", data: [sampleModel] }),
     })
     expect(exitCode).toBe(0)
@@ -78,9 +78,9 @@ describe("aa models", () => {
   })
 })
 
-describe("aa model", () => {
+describe("aa show", () => {
   it("fetches a single model by slug", () => {
-    const { captured, exitCode } = runCli(["model", "sample-model"], {
+    const { captured, exitCode } = runCli(["show", "sample-model"], {
       "/language/models/sample-model": () => ({ tier: "free", data: sampleModel }),
     })
     expect(exitCode).toBe(0)
@@ -88,8 +88,17 @@ describe("aa model", () => {
     expect(parsed.data.slug).toBe("sample-model")
   })
 
+  it('fetches a model by name query, e.g. "opus 5.5"', () => {
+    const { captured, exitCode } = runCli(["show", "sample model 5.5"], {
+      "/language/models": () => ({ tier: "free", data: [sampleModel, secondModel] }),
+    })
+    expect(exitCode).toBe(0)
+    const parsed = JSON.parse(captured.stdout[0] ?? "{}")
+    expect(parsed.data.slug).toBe("sample-model-5-5")
+  })
+
   it("maps NotFound to exit code 5 and writes to stderr", () => {
-    const { captured, exitCode } = runCli(["model", "missing"], {
+    const { captured, exitCode } = runCli(["show", "missing"], {
       "/language/models/missing": () => new NotFound({ message: "no such model", status: 404 }),
     })
     expect(exitCode).toBe(5)
@@ -97,14 +106,64 @@ describe("aa model", () => {
   })
 })
 
+describe("aa perf", () => {
+  it("requires a commercial-tier path for the language model", () => {
+    const { captured, exitCode } = runCli(["perf", "sample-model"], {
+      "/language/models/sample-model/performance": () =>
+        new TierError({ message: "commercial required", status: 403 }),
+    })
+    expect(exitCode).toBe(4)
+    expect(captured.stderr.length).toBeGreaterThan(0)
+  })
+})
+
 describe("aa providers", () => {
   it("lists providers", () => {
-    const { captured, exitCode } = runCli(["providers"], {
+    const { captured, exitCode } = runCli(["providers", "list"], {
       "/language/providers": () => ({ data: [sampleProvider] }),
     })
     expect(exitCode).toBe(0)
     const parsed = JSON.parse(captured.stdout[0] ?? "{}")
     expect(parsed.data[0].slug).toBe("sample-provider")
+  })
+
+  it("shows a single provider by slug", () => {
+    const { captured, exitCode } = runCli(["providers", "show", "sample-provider"], {
+      "/language/providers/sample-provider": () => ({ data: sampleProvider }),
+    })
+    expect(exitCode).toBe(0)
+    const parsed = JSON.parse(captured.stdout[0] ?? "{}")
+    expect(parsed.data.slug).toBe("sample-provider")
+  })
+
+  it("requires a commercial-tier path for provider perf", () => {
+    const { captured, exitCode } = runCli(["providers", "perf", "sample-provider"], {
+      "/language/providers/sample-provider/performance": () =>
+        new TierError({ message: "commercial required", status: 403 }),
+    })
+    expect(exitCode).toBe(4)
+    expect(captured.stderr.length).toBeGreaterThan(0)
+  })
+
+  it("requires a commercial-tier path for provider measurements", () => {
+    const { captured, exitCode } = runCli(["providers", "measurements", "sample-provider"], {
+      "/language/providers/sample-provider/measurements": () =>
+        new TierError({ message: "commercial required", status: 403 }),
+    })
+    expect(exitCode).toBe(4)
+    expect(captured.stderr.length).toBeGreaterThan(0)
+  })
+})
+
+describe("old command names", () => {
+  it("'model' is no longer a known command", () => {
+    const { exitCode } = runCli(["model", "sample-model"], {})
+    expect(exitCode).toBe(2)
+  })
+
+  it("'models' is no longer a known command", () => {
+    const { exitCode } = runCli(["models"], {})
+    expect(exitCode).toBe(2)
   })
 })
 
@@ -148,7 +207,7 @@ describe("aa endpoints", () => {
 
 describe("aa schema", () => {
   it("returns a JSON schema for the models command", () => {
-    const { captured, exitCode } = runCli(["schema", "models"], {})
+    const { captured, exitCode } = runCli(["schema", "list"], {})
     expect(exitCode).toBe(0)
     const schema = JSON.parse(captured.stdout[0] ?? "{}")
     expect(schema.type).toBe("array")
@@ -220,7 +279,7 @@ describe("ambiguity errors", () => {
       pricing: {},
       performance: {},
     })
-    const { captured, exitCode } = runCli(["model", "opus", "--format", "json"], {
+    const { captured, exitCode } = runCli(["show", "opus", "--format", "json"], {
       "/language/models": () => ({ tier: "free", data: [ambiguousA, ambiguousB] }),
       "/language/models/opus": () => new TierError({ message: "pro required", status: 403 }),
     })
@@ -308,7 +367,7 @@ describe("subcommand help", () => {
 describe("no Hangul in adapter-cli test output", () => {
   it("never emits Hangul characters across representative commands", () => {
     const cases: Array<[ReadonlyArray<string>, Record<string, FakeAaApiHandler>]> = [
-      [["models"], { "/language/models": () => ({ tier: "free", data: [sampleModel] }) }],
+      [["list"], { "/language/models": () => ({ tier: "free", data: [sampleModel] }) }],
       [["quota"], {}],
       [["endpoints"], {}],
       [["--help"], {}],
@@ -345,7 +404,7 @@ describe("tier memory", () => {
       observedAt: 1000,
     })
     const argvs = [
-      ["models", "--json"],
+      ["list", "--json"],
       ["find", sampleModel.slug, "--json"],
       ["compare", sampleModel.slug, sampleModel.slug, "--json"],
       ["media", "text-to-image", "--json"],

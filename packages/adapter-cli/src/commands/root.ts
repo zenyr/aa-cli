@@ -7,13 +7,14 @@ import { cacheCommand } from "./cache.ts"
 import { compareCommand } from "./compare.ts"
 import { endpointsCommand } from "./endpoints.ts"
 import { findCommand } from "./find.ts"
+import { listCommand } from "./list.ts"
 import { mediaCommand } from "./media.ts"
-import { modelCommand } from "./model.ts"
-import { modelsCommand } from "./models.ts"
+import { perfCommand } from "./perf.ts"
 import { providersCommand } from "./providers.ts"
 import { quotaCommand } from "./quota.ts"
 import { rawCommand } from "./raw.ts"
 import { schemaCommand } from "./schema.ts"
+import { showCommand } from "./show.ts"
 
 const base = Command.make("aa-cli", {}, () =>
   Effect.gen(function* () {
@@ -26,12 +27,13 @@ const base = Command.make("aa-cli", {}, () =>
 
 export const rootCommand = base.pipe(
   Command.withSubcommands([
-    modelsCommand,
-    modelCommand,
     findCommand,
+    showCommand,
     compareCommand,
-    providersCommand,
+    listCommand,
+    perfCommand,
     mediaCommand,
+    providersCommand,
     quotaCommand,
     endpointsCommand,
     schemaCommand,

@@ -1,4 +1,4 @@
-// `aa-cli models`: 언어 모델 목록.
+// `aa-cli list`: 언어 모델 목록.
 import { listLanguageModels, summaryFields, type ListLanguageModelsOpts } from "@aa/application"
 import { Command, Options } from "@effect/cli"
 import { Option } from "effect"
@@ -18,8 +18,8 @@ const allPages = Options.boolean("all-pages").pipe(
 
 const page = Options.integer("page").pipe(Options.optional, Options.withDescription("Page number"))
 
-export const modelsCommand = Command.make(
-  "models",
+export const listCommand = Command.make(
+  "list",
   { ...outputOptions, ...fetchOptions, ...freeOption, ...promptTypeOption, allPages, page },
   (opts) => {
     const listOpts: ListLanguageModelsOpts = {
