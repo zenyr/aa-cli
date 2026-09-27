@@ -193,3 +193,18 @@ describe("-h in the middle of argv via run()", () => {
     expect(text).toContain("aa-cli providers measurements <slug>")
   })
 })
+
+describe("help arguments", () => {
+  it("documents every positional argument shown in the usage line", () => {
+    for (const spec of commandHelpSpecs) {
+      const usageArgs = spec.usageArgs.split(" ").filter((t) => t.startsWith("<"))
+      expect(spec.args.map((a) => a.name)).toEqual(usageArgs)
+    }
+  })
+
+  it("renders an Arguments section only when the command takes arguments", () => {
+    for (const spec of commandHelpSpecs) {
+      expect(renderCommandHelp(spec).includes("Arguments:")).toBe(spec.args.length > 0)
+    }
+  })
+})

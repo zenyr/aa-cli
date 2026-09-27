@@ -49,6 +49,7 @@ export interface OwnOption {
 export interface CommandHelpSpec {
   readonly path: ReadonlyArray<string>
   readonly usageArgs: string
+  readonly args: ReadonlyArray<{ readonly name: string; readonly description: string }>
   readonly summary: string
   readonly optionGroups: ReadonlyArray<OptionGroup>
   readonly ownOptions: ReadonlyArray<OwnOption>
@@ -67,6 +68,12 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["find"],
     usageArgs: "<words...>",
+    args: [
+      {
+        name: "<words...>",
+        description: "Keywords matched against model slugs and names, e.g. opus 5.5",
+      },
+    ],
     summary: "Search language models by name. Returns ranked candidates.",
     optionGroups: ["output", "fetch", "free", "promptType"],
     ownOptions: [],
@@ -78,7 +85,14 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["show"],
     usageArgs: "<query>",
-    summary: 'One language model. Query may be a slug or a name, e.g. "opus 5.5".',
+    args: [
+      {
+        name: "<query>",
+        description:
+          'Model slug or name, e.g. claude-opus-5-5 or "opus 5.5" (quote names with spaces)',
+      },
+    ],
+    summary: "Show one language model.",
     optionGroups: ["output", "fetch", "promptType"],
     ownOptions: [],
     examples: [
@@ -89,6 +103,13 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["perf"],
     usageArgs: "<query>",
+    args: [
+      {
+        name: "<query>",
+        description:
+          'Model slug or name, e.g. claude-opus-5-5 or "opus 5.5" (quote names with spaces)',
+      },
+    ],
     summary: "Language model performance history over time. Requires the commercial tier.",
     optionGroups: ["output", "fetch", "promptType"],
     ownOptions: [
@@ -100,6 +121,12 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["compare"],
     usageArgs: "<query>...",
+    args: [
+      {
+        name: "<query>...",
+        description: 'Two or more model slugs or names, e.g. "opus 5.5" "opus 5"',
+      },
+    ],
     summary: "Compare two or more language models side by side.",
     optionGroups: ["output", "fetch", "free", "promptType"],
     ownOptions: [],
@@ -108,6 +135,7 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["list"],
     usageArgs: "",
+    args: [],
     summary: "List all language models.",
     optionGroups: ["output", "fetch", "free", "promptType"],
     ownOptions: [
@@ -119,6 +147,13 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["media"],
     usageArgs: "<kind>",
+    args: [
+      {
+        name: "<kind>",
+        description:
+          "text-to-image, image-editing, text-to-video, image-to-video, text-to-speech, music-vocal, ...",
+      },
+    ],
     summary: "Media arena rankings (text-to-image, text-to-video, ...).",
     optionGroups: ["output", "fetch", "free"],
     ownOptions: [
@@ -130,6 +165,7 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["providers", "list"],
     usageArgs: "",
+    args: [],
     summary: "List API providers. Requires the commercial tier.",
     optionGroups: ["output", "fetch", "promptType"],
     ownOptions: [{ flag: "--all-pages", display: "--all-pages" }],
@@ -138,6 +174,9 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["providers", "show"],
     usageArgs: "<slug>",
+    args: [
+      { name: "<slug>", description: "Provider slug, e.g. openai (see: aa-cli providers list)" },
+    ],
     summary: "One API provider. Requires the commercial tier.",
     optionGroups: ["output", "fetch", "promptType"],
     ownOptions: [],
@@ -146,6 +185,9 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["providers", "perf"],
     usageArgs: "<slug>",
+    args: [
+      { name: "<slug>", description: "Provider slug, e.g. openai (see: aa-cli providers list)" },
+    ],
     summary: "Provider performance history over time. Requires the commercial tier.",
     optionGroups: ["output", "fetch", "promptType"],
     ownOptions: [
@@ -157,6 +199,9 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["providers", "measurements"],
     usageArgs: "<slug>",
+    args: [
+      { name: "<slug>", description: "Provider slug, e.g. openai (see: aa-cli providers list)" },
+    ],
     summary: "Raw provider measurements. Requires per-account approval (commercial).",
     optionGroups: ["output", "fetch", "promptType"],
     ownOptions: [{ flag: "--start-date", display: "--start-date YYYY-MM-DD" }],
@@ -165,6 +210,7 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["quota"],
     usageArgs: "",
+    args: [],
     summary: "Last observed rate limit. Reads only the cache, never calls the API.",
     optionGroups: ["minimalOutput"],
     ownOptions: [],
@@ -173,6 +219,7 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["endpoints"],
     usageArgs: "",
+    args: [],
     summary: "Supported endpoints and their required tiers (static catalog).",
     optionGroups: ["minimalOutput"],
     ownOptions: [],
@@ -181,6 +228,7 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["schema"],
     usageArgs: "<command...>",
+    args: [{ name: "<command...>", description: "Command path, e.g. show or providers list" }],
     summary: "JSON Schema of a command's data output.",
     optionGroups: [],
     ownOptions: [],
@@ -189,6 +237,7 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["raw"],
     usageArgs: "<path>",
+    args: [{ name: "<path>", description: "API path under /api/v2, e.g. /language/models/free" }],
     summary: "Escape hatch: an arbitrary GET against the API, response shape not enforced.",
     optionGroups: ["output", "fetch"],
     ownOptions: [{ flag: "--query", display: "--query k=v (repeatable)" }],
@@ -197,6 +246,7 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
   {
     path: ["cache", "clear"],
     usageArgs: "",
+    args: [],
     summary: "Clear the local cache (default: responses+tier, --quota: tier only).",
     optionGroups: ["formatOnly"],
     ownOptions: [{ flag: "--quota", display: "--quota" }],
@@ -232,7 +282,7 @@ export interface RootMenuEntry {
 
 export const rootMenu: ReadonlyArray<RootMenuEntry> = [
   { label: "find <words...>", summary: "Search language models by name (ranked candidates)" },
-  { label: "show <query>", summary: 'One language model (query may be a name: "opus 5.5")' },
+  { label: "show <query>", summary: 'One language model (slug or name, e.g. "opus 5.5")' },
   { label: "perf <query>", summary: "Model performance over time (commercial)" },
   { label: "compare <query>...", summary: "Language models side by side" },
   { label: "list", summary: "All language models" },

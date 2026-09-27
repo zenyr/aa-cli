@@ -63,6 +63,14 @@ export const renderCommandHelp = (spec: CommandHelpSpec): string => {
   const usage =
     spec.usageArgs.length === 0 ? spec.path.join(" ") : `${spec.path.join(" ")} ${spec.usageArgs}`
   const lines: Array<string> = [`aa-cli ${usage}`, "", spec.summary]
+  if (spec.args.length > 0) {
+    const width = Math.max(...spec.args.map((a) => a.name.length))
+    lines.push(
+      "",
+      "Arguments:",
+      ...spec.args.map((a) => `  ${a.name.padEnd(width)}   ${a.description}`),
+    )
+  }
   const options = optionLines(spec)
   if (options.length > 0) lines.push("", "Options:", ...options)
   lines.push("", "Examples:", ...spec.examples.map((e) => `  ${e}`))
