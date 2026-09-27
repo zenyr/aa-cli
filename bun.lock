@@ -45,6 +45,7 @@
       },
       "devDependencies": {
         "@aa/tsconfig": "workspace:*",
+        "@effect/platform-bun": "^0.91.2",
       },
     },
     "packages/adapter-cache": {
@@ -57,6 +58,7 @@
       },
       "devDependencies": {
         "@aa/tsconfig": "workspace:*",
+        "@effect/platform-bun": "^0.91.2",
       },
     },
     "packages/adapter-cli": {
@@ -66,10 +68,12 @@
         "@aa/application": "workspace:*",
         "@aa/domain": "workspace:*",
         "@effect/cli": "^0.77.2",
+        "@effect/platform": "^0.97.2",
         "effect": "^3.22.2",
       },
       "devDependencies": {
         "@aa/tsconfig": "workspace:*",
+        "@effect/platform-bun": "^0.91.2",
       },
     },
     "packages/application": {
