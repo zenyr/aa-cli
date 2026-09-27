@@ -8,12 +8,11 @@
     "aa-cli": "./dist/aa-cli.js"
   },
   "files": [
-    "dist"
+    "dist/aa-cli.js"
   ],
   "type": "module",
   "scripts": {
-    "build": "bun build ./src/main.ts --target=bun --outfile=dist/aa-cli.js",
-    "build:bin": "bun build ./src/main.ts --compile --outfile=dist/aa-cli",
+    "build": "bun build ./src/main.ts --target=bun --outfile=dist/aa-cli.js && bun build ./src/main.ts --compile --outfile=dist/aa-cli",
     "dev": "AA_CACHE_DIR=\"${AA_CACHE_DIR:-$(../../scripts/cache-dir.sh)}\" bun run ./src/main.ts",
     "typecheck": "tsc -p .",
     "test": "bun test --pass-with-no-tests"

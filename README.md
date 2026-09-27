@@ -166,7 +166,8 @@ scripts/cache-dir.sh   # → <메인 워크트리>/.git/aa-cache
 
 ```sh
 bun run check                                   # fmt:check + lint + typecheck + test
-bun run build | typecheck | test                # turbo run <task>
+bun run build                                   # dist/aa-cli.js (링크된 aa-cli) + 단일 바이너리 dist/aa-cli
+bun run typecheck | test                        # turbo run <task>
 bun run lint | fmt                              # oxlint / oxfmt (루트에서 한 번에)
 bun run --cwd apps/cli dev -- <args>            # aa-cli 실행 (AA_CACHE_DIR 자동 주입)
 AA_LIVE=1 bun run test                          # 실제 API 호출 테스트 (한도 소모)
