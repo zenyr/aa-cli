@@ -24,6 +24,10 @@
 - 저장소 루트에서 `find .`, `grep -r .` 처럼 전체를 훑지 않는다. `node_modules`, `.git`, `dist` 까지 뒤져서 매우 느리다.
 - 추적 파일은 `git ls-files` 로 찾고, 내용 검색은 `git grep` 이나 `rg` 를 쓴다.
 - 꼭 `find` 를 써야 하면 `packages/<pkg>/src` 처럼 범위를 좁힌다.
+- 저장소 밖(`/`, `~`, 시스템 디렉터리)은 탐색하지 않는다.
+- 의존성 소스는 그 의존성을 쓰는 패키지의 `node_modules` 아래에 있다. Bun 격리 설치라 루트 `node_modules` 에는 없다.
+  - 예: `packages/adapter-cli/node_modules/@effect/cli/src`, `packages/domain/node_modules/effect/src`
+  - 실제 파일은 `node_modules/.bun/<패키지>@<버전>/` 아래에 있다.
 
 ## 아키텍처
 
