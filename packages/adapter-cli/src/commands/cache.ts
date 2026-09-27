@@ -5,8 +5,12 @@ import { Command, Options } from "@effect/cli"
 import { Effect, Option, Ref } from "effect"
 import { ExitCode } from "../exit-code.ts"
 import { formatOnlyOptions } from "../global-options.ts"
+import { groupHelpSpecs } from "../help-spec.ts"
+import { renderGroupHelp } from "../help.ts"
 import { Output } from "../output.ts"
 import { runItemCommand } from "./support.ts"
+
+const cacheGroupSpec = groupHelpSpecs.find((s) => s.path.join(" ") === "cache")
 
 const summaryFields = ["cleared"]
 
@@ -32,7 +36,7 @@ const clearCommand = Command.make("clear", { ...formatOnlyOptions, quota }, (opt
 const cacheBase = Command.make("cache", {}, () =>
   Effect.gen(function* () {
     const output = yield* Output
-    yield* output.stderr("aa-cli cache: usage: a subcommand is required (see --help)")
+    if (cacheGroupSpec !== undefined) yield* output.stderr(renderGroupHelp(cacheGroupSpec))
     const exit = yield* ExitCode
     yield* Ref.set(exit, 2)
   }),

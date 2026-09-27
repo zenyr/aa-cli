@@ -125,6 +125,27 @@ export const promptTypeOption = { promptType }
 
 export type PromptTypeOptionValue = { readonly promptType: Option.Option<PromptType> }
 
+// 각 옵션 그룹이 실제로 붙이는 플래그 이름. help-spec 렌더링과 drift-guard 테스트가 이 배열을 근거로 쓴다.
+export const outputOptionFlags: ReadonlyArray<string> = [
+  "--format",
+  "--json",
+  "--fields",
+  "--full",
+  "--limit",
+  "--sort",
+  "--filter",
+]
+
+export const minimalOutputOptionFlags: ReadonlyArray<string> = ["--format", "--json", "--fields"]
+
+export const formatOnlyOptionFlags: ReadonlyArray<string> = ["--format", "--json"]
+
+export const fetchOptionFlags: ReadonlyArray<string> = ["--no-cache", "--offline", "--ttl"]
+
+export const freeOptionFlags: ReadonlyArray<string> = ["--free"]
+
+export const promptTypeOptionFlags: ReadonlyArray<string> = ["--prompt-type"]
+
 // `--format` / `--json` / TTY 감지를 하나의 규칙으로 합친다.
 export const resolveFormat = (v: FormatOnlyOptionsValue, isTTY: boolean): Format => {
   if (v.json) return "json"

@@ -1,23 +1,20 @@
 // `aa-cli`, `aa-cli --help`, `aa-cli -h` 가 보여주는, 손으로 쓴 짧은 도움말.
-// @effect/cli 기본 렌더링은 옵션이 많아지면 장황해져서, 루트 화면만 직접 만든다.
+// @effect/cli 기본 렌더링은 옵션이 많아지면 장황해져서, Commands 섹션은 `help-spec.ts` 의
+// `rootMenu` 에서 생성하고, 나머지 정적 텍스트만 여기서 손으로 유지한다.
+import { rootMenu } from "./help-spec.ts"
+
+const commandsSection = (): ReadonlyArray<string> => {
+  const width = Math.max(...rootMenu.map((e) => e.label.length))
+  return rootMenu.map((e) => `  ${e.label.padEnd(width)}   ${e.summary}`)
+}
+
 export const rootHelpText = [
   "aa-cli — Artificial Analysis Data API for agents and humans",
   "",
   "Usage: aa-cli <command> [args] [options]",
   "",
   "Commands:",
-  "  find <words...>            Search language models by name (ranked candidates)",
-  '  show <query>                One language model (query may be a name: "opus 5.5")',
-  "  perf <query>                Model performance over time (commercial)",
-  "  compare <query>...          Language models side by side",
-  "  list                        All language models",
-  "  media <kind>                Media arena rankings (text-to-image, text-to-video, ...)",
-  "  providers list|show|perf|measurements <slug>   API providers (commercial tier)",
-  "  quota                       Last observed rate limit (no request)",
-  "  endpoints                   Supported endpoints and required tiers",
-  "  schema <command...>         JSON Schema of a command's data output",
-  "  raw <path>                  Arbitrary GET (escape hatch)",
-  "  cache clear [--quota]       Clear local cache / remembered tier",
+  ...commandsSection(),
   "",
   "Common options:",
   "  --format json|jsonl|table|tsv|md   default: table on TTY, json when piped",
@@ -34,19 +31,3 @@ export const rootHelpText = [
   "Exit codes: 0 ok, 2 usage/ambiguous, 3 auth, 4 tier, 5 not found, 6 rate limited",
   "Config: AA_APIKEY env or ~/.config/aa-cli/.env · Data: Artificial Analysis",
 ].join("\n")
-
-// 최상위 서브커맨드 이름. `run` 이 알 수 없는 커맨드를 조기에 걸러낼 때 쓴다.
-export const knownCommandNames: ReadonlyArray<string> = [
-  "find",
-  "show",
-  "perf",
-  "compare",
-  "list",
-  "media",
-  "providers",
-  "quota",
-  "endpoints",
-  "schema",
-  "raw",
-  "cache",
-]

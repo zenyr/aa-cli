@@ -7,9 +7,11 @@ import type { Terminal } from "@effect/platform/Terminal"
 import { Effect, Ref } from "effect"
 import { rootCommand } from "./commands/root.ts"
 import { ExitCode } from "./exit-code.ts"
+import { renderCommandHelp, renderGroupHelp, resolveHelpTarget } from "./help.ts"
+import { knownCommandNames } from "./help-spec.ts"
 import { noColorConsoleLayer } from "./no-color-console.ts"
 import { Output } from "./output.ts"
-import { knownCommandNames, rootHelpText } from "./root-help.ts"
+import { rootHelpText } from "./root-help.ts"
 
 export { Output, OutputLive } from "./output.ts"
 
@@ -21,15 +23,20 @@ const cliConfigLayer = CliConfig.layer({ showBuiltIns: false, showTypes: false }
 
 const runCli = Command.run(rootCommand, { name: "aa-cli", version: cliVersion })
 
-// 루트 도움말(`aa-cli`, `--help`, `-h`)은 @effect/cli 를 거치지 않고 직접 렌더링한다.
-const isBareOrHelp = (userArgs: ReadonlyArray<string>): boolean =>
-  userArgs.length === 0 || userArgs[0] === "--help" || userArgs[0] === "-h"
+const isBare = (userArgs: ReadonlyArray<string>): boolean => userArgs.length === 0
 
 const isUnknownCommand = (userArgs: ReadonlyArray<string>): boolean =>
   userArgs.length > 0 &&
   userArgs[0] !== undefined &&
   !userArgs[0].startsWith("-") &&
   !knownCommandNames.includes(userArgs[0])
+
+// 도움말 텍스트로 target 을 렌더링한다. 루트/그룹/커맨드 도움말 모두 `help-spec.ts` 에서 나온다.
+const renderHelp = (target: NonNullable<ReturnType<typeof resolveHelpTarget>>): string => {
+  if (target.kind === "root") return rootHelpText
+  if (target.kind === "group") return renderGroupHelp(target.spec)
+  return renderCommandHelp(target.spec)
+}
 
 // argv -> 종료 코드. 실패하지 않는다: `@effect/cli` 검증 오류는 exit 2 (도움말 요청은 0)로 흡수한다.
 export const run = (
@@ -39,10 +46,16 @@ export const run = (
     const userArgs = argv.slice(2)
     const output = yield* Output
 
-    if (isBareOrHelp(userArgs)) {
-      const isExplicitHelp = userArgs.length > 0
-      yield* isExplicitHelp ? output.stdout(rootHelpText) : output.stderr(rootHelpText)
-      return isExplicitHelp ? 0 : 2
+    if (isBare(userArgs)) {
+      yield* output.stderr(rootHelpText)
+      return 2
+    }
+
+    // `--help`/`-h` 는 argv 어디에 있든 여기서 가로챈다. `@effect/cli` 도움말 렌더링을 거치지 않는다.
+    const helpTarget = resolveHelpTarget(userArgs)
+    if (helpTarget !== undefined) {
+      yield* output.stdout(renderHelp(helpTarget))
+      return 0
     }
 
     if (isUnknownCommand(userArgs)) {

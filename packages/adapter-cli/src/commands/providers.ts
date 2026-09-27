@@ -17,8 +17,12 @@ import { Args, Command, Options } from "@effect/cli"
 import { Effect, Option, Ref } from "effect"
 import { fetchOptions, outputOptions, promptTypeOption } from "../global-options.ts"
 import { ExitCode } from "../exit-code.ts"
+import { groupHelpSpecs } from "../help-spec.ts"
+import { renderGroupHelp } from "../help.ts"
 import { Output } from "../output.ts"
 import { commonOptsOf, runItemCommand, runListCommand } from "./support.ts"
+
+const providersGroupSpec = groupHelpSpecs.find((s) => s.path.join(" ") === "providers")
 
 const providerSummaryFields: ReadonlyArray<string> = summaryFields.provider
 
@@ -97,7 +101,7 @@ const measurementsCommand = Command.make(
 const providersBase = Command.make("providers", {}, () =>
   Effect.gen(function* () {
     const output = yield* Output
-    yield* output.stderr("aa-cli providers: usage: a subcommand is required (see --help)")
+    if (providersGroupSpec !== undefined) yield* output.stderr(renderGroupHelp(providersGroupSpec))
     const exit = yield* ExitCode
     yield* Ref.set(exit, 2)
   }),
