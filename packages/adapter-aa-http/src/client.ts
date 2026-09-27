@@ -9,7 +9,14 @@ import {
   toRateLimited,
   toStatusError,
 } from "./errors.ts"
-import { buildResponseMeta, readResetAt, readRetryAfter, sourceUrl } from "./meta.ts"
+import {
+  buildRateLimit,
+  buildResponseMeta,
+  readResetAt,
+  readRetryAfter,
+  readTier,
+  sourceUrl,
+} from "./meta.ts"
 import { toUrlParams } from "./query.ts"
 
 const DEFAULT_BASE_URL = "https://artificialanalysis.ai/api/v2"
@@ -52,12 +59,24 @@ const executeOnce = <A, I>(
 
     if (response.status < 200 || response.status >= 300) {
       const body = readErrorBody(raw)
+      const bodyTier =
+        typeof raw === "object" && raw !== null
+          ? (raw as Record<string, unknown>)["tier"]
+          : undefined
+      const tier = readTier(response.headers, bodyTier)
+      const rateLimit = buildRateLimit(response.headers)
       if (response.status === 429) {
         return yield* Effect.fail(
-          toRateLimited(body, readRetryAfter(response.headers), readResetAt(response.headers)),
+          toRateLimited(
+            body,
+            readRetryAfter(response.headers),
+            readResetAt(response.headers),
+            tier,
+            rateLimit,
+          ),
         )
       }
-      return yield* Effect.fail(toStatusError(response.status, body))
+      return yield* Effect.fail(toStatusError(response.status, body, tier, rateLimit))
     }
 
     const decoded = yield* Effect.mapError(Schema.decodeUnknown(req.schema)(raw), toDecodeError)

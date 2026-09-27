@@ -9,9 +9,17 @@ import {
   ServerError,
   TierError,
 } from "@aa/domain"
-import type { AaError } from "@aa/domain"
+import type { AaError, RateLimit, Tier } from "@aa/domain"
 import { TreeFormatter } from "effect/ParseResult"
 import type { ParseError } from "effect/ParseResult"
+
+// 2xx 가 아닌 응답에서 얻은 티어/쿼터. 없으면 필드를 생략한다.
+type ObservedQuota = { readonly tier?: Tier; readonly rateLimit?: RateLimit }
+
+const observedQuotaFields = (tier: Tier | null, rateLimit: RateLimit | null): ObservedQuota => ({
+  ...(tier !== null ? { tier } : {}),
+  ...(rateLimit !== null ? { rateLimit } : {}),
+})
 
 // AA 에러 바디: `{ error, details? }`. 모르는 형태면 undefined.
 export const readErrorBody = (raw: unknown): { readonly message?: string } => {
@@ -25,14 +33,21 @@ export const toNetworkError = (error: HttpClientError.HttpClientError): NetworkE
   new NetworkError({ message: error.message })
 
 // 상태 코드 + 파싱된 에러 바디를 도메인 AaError 로 매핑한다. 2xx 는 호출하지 않는다.
-export const toStatusError = (status: number, body: { readonly message?: string }): AaError => {
+export const toStatusError = (
+  status: number,
+  body: { readonly message?: string },
+  tier: Tier | null,
+  rateLimit: RateLimit | null,
+): AaError => {
   const message = body.message ?? `AA API request failed with status ${status}`
-  if (status === 400) return new BadRequest({ message, status })
+  const quota = observedQuotaFields(tier, rateLimit)
+  if (status === 400) return new BadRequest({ message, status, ...quota })
   if (status === 401)
-    return new AuthError({ message, status, hint: "set AA_APIKEY (see .env.example)" })
-  if (status === 403) return new TierError({ message, status, hint: "try --free or a higher tier" })
-  if (status === 404) return new NotFound({ message, status })
-  return new ServerError({ message, status })
+    return new AuthError({ message, status, hint: "set AA_APIKEY (see .env.example)", ...quota })
+  if (status === 403)
+    return new TierError({ message, status, hint: "try --free or a higher tier", ...quota })
+  if (status === 404) return new NotFound({ message, status, ...quota })
+  return new ServerError({ message, status, ...quota })
 }
 
 // 429 전용 매핑: Retry-After, X-RateLimit-Reset 을 붙인다.
@@ -40,12 +55,15 @@ export const toRateLimited = (
   body: { readonly message?: string },
   retryAfter: number | undefined,
   resetAt: number | undefined,
+  tier: Tier | null,
+  rateLimit: RateLimit | null,
 ): RateLimited =>
   new RateLimited({
     message: body.message ?? "AA API rate limit exceeded",
     status: 429,
     ...(retryAfter !== undefined ? { retryAfter } : {}),
     ...(resetAt !== undefined ? { resetAt } : {}),
+    ...observedQuotaFields(tier, rateLimit),
   })
 
 // Schema 디코드 실패를 DecodeError 로 요약한다.

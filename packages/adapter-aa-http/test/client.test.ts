@@ -125,6 +125,28 @@ describe("AaApiLive", () => {
     expect((error as TierError).hint).toContain("--free")
   })
 
+  test("maps 403 with headers to TierError carrying tier and rateLimit", async () => {
+    const exit = await runGet(
+      testRequest,
+      () =>
+        new Response(JSON.stringify({ error: "needs pro" }), {
+          status: 403,
+          headers: {
+            "X-AA-Tier": "free",
+            "X-RateLimit-Limit": "100",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": "1790000000",
+          },
+        }),
+    )
+    expect(exit._tag).toBe("Failure")
+    if (exit._tag !== "Failure") return
+    const error = exit.cause._tag === "Fail" ? exit.cause.error : undefined
+    expect(error).toBeInstanceOf(TierError)
+    expect((error as TierError).tier).toBe("free")
+    expect((error as TierError).rateLimit).toEqual({ limit: 100, remaining: 0, reset: 1790000000 })
+  })
+
   test("maps 404 to NotFound", async () => {
     const exit = await runGet(
       testRequest,
@@ -152,6 +174,34 @@ describe("AaApiLive", () => {
     expect(error).toBeInstanceOf(RateLimited)
     expect((error as RateLimited).retryAfter).toBe(30)
     expect((error as RateLimited).resetAt).toBe(1790000000)
+  })
+
+  test("maps 429 with X-RateLimit-* headers to RateLimited carrying rateLimit", async () => {
+    const exit = await runGet(
+      testRequest,
+      () =>
+        new Response(JSON.stringify({ error: "quota exceeded" }), {
+          status: 429,
+          headers: {
+            "Retry-After": "30",
+            "X-RateLimit-Limit": "100",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": "1790000000",
+          },
+        }),
+    )
+
+    expect(exit._tag).toBe("Failure")
+    if (exit._tag !== "Failure") return
+    const error = exit.cause._tag === "Fail" ? exit.cause.error : undefined
+    expect(error).toBeInstanceOf(RateLimited)
+    expect((error as RateLimited).retryAfter).toBe(30)
+    expect((error as RateLimited).resetAt).toBe(1790000000)
+    expect((error as RateLimited).rateLimit).toEqual({
+      limit: 100,
+      remaining: 0,
+      reset: 1790000000,
+    })
   })
 
   test("maps 500 to ServerError after exhausting retries", async () => {
