@@ -45,6 +45,8 @@ export const CacheMemory: Layer.Layer<Cache> = Layer.effect(
     const setRateLimit: CacheService["setRateLimit"] = (snapshot) =>
       Ref.set(quota, Option.some(snapshot))
 
-    return Cache.of({ get, set, clear, getRateLimit, setRateLimit })
+    const clearRateLimit: CacheService["clearRateLimit"] = () => Ref.set(quota, Option.none())
+
+    return Cache.of({ get, set, clear, getRateLimit, setRateLimit, clearRateLimit })
   }),
 )

@@ -98,6 +98,12 @@ export const CacheFileLive = Layer.effect(
 
     const getRateLimit: CacheService["getRateLimit"] = () => readJson(fs, quotaPath, QuotaFile)
 
+    const clearRateLimit: CacheService["clearRateLimit"] = () =>
+      fs.remove(quotaPath).pipe(
+        Effect.catchAll((error) => Effect.logDebug("quota clear failed", error)),
+        Effect.asVoid,
+      )
+
     const setRateLimit: CacheService["setRateLimit"] = (snapshot: QuotaSnapshot) =>
       Effect.gen(function* () {
         const encoded = yield* Schema.encode(Schema.parseJson(QuotaFile))(snapshot).pipe(
@@ -109,6 +115,6 @@ export const CacheFileLive = Layer.effect(
         yield* writeAtomic(fs, path, quotaPath, encoded)
       })
 
-    return Cache.of({ get, set, clear, getRateLimit, setRateLimit })
+    return Cache.of({ get, set, clear, getRateLimit, setRateLimit, clearRateLimit })
   }),
 )

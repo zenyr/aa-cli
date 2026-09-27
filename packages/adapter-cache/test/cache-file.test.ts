@@ -122,4 +122,31 @@ describe("CacheFileLive", () => {
     )
     expect(Option.isNone(result)).toBe(true)
   })
+
+  test("clearRateLimit removes the stored snapshot", async () => {
+    const result = await runTest(
+      Effect.gen(function* () {
+        const cache = yield* Cache
+        yield* cache.setRateLimit({
+          tier: "free",
+          rateLimit: { limit: 100, remaining: 1, reset: 1 },
+          observedAt: 0,
+        })
+        yield* cache.clearRateLimit()
+        return yield* cache.getRateLimit()
+      }),
+    )
+    expect(Option.isNone(result)).toBe(true)
+  })
+
+  test("clearRateLimit is a no-op when nothing was stored", async () => {
+    const result = await runTest(
+      Effect.gen(function* () {
+        const cache = yield* Cache
+        yield* cache.clearRateLimit()
+        return yield* cache.getRateLimit()
+      }),
+    )
+    expect(Option.isNone(result)).toBe(true)
+  })
 })
