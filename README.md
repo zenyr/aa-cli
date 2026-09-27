@@ -8,6 +8,14 @@
 
 > 데이터 출처: [Artificial Analysis](https://artificialanalysis.ai/)
 
+## 런타임
+
+배포물은 `#!/usr/bin/env node` 셰뱅을 단 JS 번들 하나다 (`dist/aa-cli.js`).
+
+- Node 20 이상이 필요하다. Bun 에서도 그대로 실행된다.
+- 개발 중에는 Bun 으로 소스를 바로 실행한다 (`bun run --cwd apps/cli dev`).
+- 런타임 없는 환경용 단일 바이너리는 보류했다 (`todo.md`).
+
 ## 설정
 
 ```sh
@@ -58,7 +66,7 @@ apps/cli ── 모든 레이어를 Layer 로 조립
 | domain      | `Schema` 엔티티 (LanguageModel, Provider, MediaModel, Envelope, Pagination, Tier, RateLimit)<br>태그드 에러 (`AuthError`, `TierError`, `NotFound`, `RateLimited`, `BadRequest`, `ServerError`)<br>포트 (`AaApi`, `Cache`, `Clock`) |
 | application | models, model, compare, rank, media 유스케이스<br>페이지 전체 수집, 티어 폴백 (pro 403 → `/free`), 필드 선택·정렬·필터                                                                                                             |
 | adapters    | 포트 구현만                                                                                                                                                                                                                        |
-| apps/cli    | `main.ts` 에서 Layer 조립 + `BunRuntime.runMain`, `bun build --compile`                                                                                                                                                            |
+| apps/cli    | `main.ts` 에서 Layer 조립 (`@effect/platform-node`), Node 대상 번들                                                                                                                                                                |
 
 ## 커맨드 (초안)
 
@@ -166,7 +174,7 @@ scripts/cache-dir.sh   # → <메인 워크트리>/.git/aa-cache
 
 ```sh
 bun run check                                   # fmt:check + lint + typecheck + test
-bun run build                                   # dist/aa-cli.js (링크된 aa-cli) + 단일 바이너리 dist/aa-cli
+bun run build                                   # dist/aa-cli.js (Node 대상, 링크된 aa-cli)
 bun run typecheck | test                        # turbo run <task>
 bun run lint | fmt                              # oxlint / oxfmt (루트에서 한 번에)
 bun run --cwd apps/cli dev -- <args>            # aa-cli 실행 (AA_CACHE_DIR 자동 주입)

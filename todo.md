@@ -36,4 +36,5 @@
   - [x] provider 용 `summaryFields` 를 application 으로 이동
 - [ ] 배포
   - [ ] `@zenyr/aa-cli` npm publish
-  - [ ] `bun build --compile` 단일 바이너리
+  - [x] Node 대상 JS 번들 (`#!/usr/bin/env node`, Node 20+, Bun 호환)
+  - [ ] (보류) 런타임 없는 환경용 OS/아키텍처별 단일 바이너리 (`bun build --compile --target=bun-<os>-<arch>`, GitHub Releases)
