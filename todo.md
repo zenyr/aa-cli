@@ -30,10 +30,10 @@
 - [x] 실행 명령 `aa` → `aa-cli` 로 변경 (macOS `/usr/bin/aa` 와 충돌 회피)
 - [x] 전역 설정 파일 지원 (`~/.config/aa-cli/.env`, `AA_CONFIG_FILE`)
 - [ ] 후속 정리
-  - [ ] 파이프 출력 시 `--help` 의 ANSI 색 코드 제거 (NO_COLOR/비TTY)
-  - [ ] table 헤더가 dot path 전체라 너무 넓음: 짧은 별칭 검토
-  - [ ] `endpoints` 요약 문구 영어로 통일, 요약 필드 목록 확정
-  - [ ] provider 용 `summaryFields` 를 application 으로 이동
+  - [x] 파이프 출력 시 `--help` 의 ANSI 색 코드 제거 (NO_COLOR/비TTY)
+  - [x] table 헤더가 dot path 전체라 너무 넓음: 짧은 별칭 검토
+  - [x] `endpoints` 요약 문구 영어로 통일, 요약 필드 목록 확정
+  - [x] provider 용 `summaryFields` 를 application 으로 이동
 - [ ] 배포
   - [ ] `@zenyr/aa-cli` npm publish
   - [ ] `bun build --compile` 단일 바이너리
