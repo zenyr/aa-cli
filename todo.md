@@ -11,22 +11,27 @@
   - [x] lefthook
   - [x] `@aa/tsconfig`
 - [x] `@aa/domain`: 스키마, 포트, 에러
-- [ ] `@aa/adapter-aa-http`
-  - [ ] HttpClient
-  - [ ] 응답 헤더 파싱 (tier, rate limit)
-  - [ ] 상태 코드 → 에러 매핑
-  - [ ] 키 가리기
-- [ ] `@aa/application`
-  - [ ] models, model, compare
-  - [ ] 페이지 전체 수집
-  - [ ] 티어 폴백
-- [ ] `@aa/adapter-cli` + `apps/cli`
-  - [ ] 커맨드
-  - [ ] 포매터 (json, jsonl, table, tsv, md)
-  - [ ] 종료 코드
-  - [ ] 출처 표기
-- [ ] `@aa/adapter-cache` + `aa quota` (`AA_CACHE_DIR` → XDG → `~/.cache/aa`)
-- [ ] `aa media`, `aa providers`, `aa raw`, `aa schema`, `aa endpoints`
+- [x] `@aa/adapter-aa-http`
+  - [x] HttpClient
+  - [x] 응답 헤더 파싱 (tier, rate limit)
+  - [x] 상태 코드 → 에러 매핑
+  - [x] 키 가리기
+- [x] `@aa/application`
+  - [x] models, model, compare
+  - [x] 페이지 전체 수집
+  - [x] 티어 폴백
+- [x] `@aa/adapter-cli` + `apps/cli`
+  - [x] 커맨드
+  - [x] 포매터 (json, jsonl, table, tsv, md)
+  - [x] 종료 코드
+  - [x] 출처 표기
+- [x] `@aa/adapter-cache` + `aa quota` (`AA_CACHE_DIR` → XDG → `~/.cache/aa`)
+- [x] `aa media`, `aa providers`, `aa raw`, `aa schema`, `aa endpoints`
+- [ ] 후속 정리
+  - [ ] 파이프 출력 시 `--help` 의 ANSI 색 코드 제거 (NO_COLOR/비TTY)
+  - [ ] table 헤더가 dot path 전체라 너무 넓음: 짧은 별칭 검토
+  - [ ] `endpoints` 요약 문구 영어로 통일, 요약 필드 목록 확정
+  - [ ] provider 용 `summaryFields` 를 application 으로 이동
 - [ ] 배포
   - [ ] `@zenyr/aa-cli` npm publish
   - [ ] `bun build --compile` 단일 바이너리
