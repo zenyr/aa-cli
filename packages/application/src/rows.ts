@@ -134,9 +134,13 @@ export const summaryFields = {
     "pricing.price_1m_output_tokens",
     "performance.median_output_tokens_per_second",
     "performance.median_time_to_first_token_seconds",
+    "artificial_analysis_intelligence_index_cost.cost_per_task.total_cost",
+    "artificial_analysis_intelligence_index_cost.total_cost",
   ],
   mediaModel: ["slug", "name", "model_creator.name", "elo", "ci_95", "rank", "price_per_1k_images"],
+  provider: ["slug", "name"],
 } as const satisfies {
   readonly languageModel: ReadonlyArray<string>
   readonly mediaModel: ReadonlyArray<string>
+  readonly provider: ReadonlyArray<string>
 }
