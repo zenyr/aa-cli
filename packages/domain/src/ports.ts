@@ -42,5 +42,6 @@ export class Cache extends Context.Tag("@aa/domain/Cache")<
     readonly clear: () => Effect.Effect<void, never>
     readonly getRateLimit: () => Effect.Effect<Option.Option<QuotaSnapshot>, never>
     readonly setRateLimit: (snapshot: QuotaSnapshot) => Effect.Effect<void, never>
+    readonly clearRateLimit: () => Effect.Effect<void, never>
   }
 >() {}
