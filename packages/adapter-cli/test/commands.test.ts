@@ -1,7 +1,8 @@
 // 커맨드 수준 통합 테스트: 페이크 AaApi/Cache 로 `run(argv)` 를 끝까지 돌린다.
-import { LanguageModel, ModelCreator, NotFound, TierError } from "@aa/domain"
+import { Cache, LanguageModel, ModelCreator, NotFound, RateLimit, TierError } from "@aa/domain"
+import type { QuotaSnapshot } from "@aa/domain"
 import { BunContext } from "@effect/platform-bun"
-import { Effect, Layer } from "effect"
+import { Effect, Layer, Option, Ref } from "effect"
 import { describe, expect, it } from "bun:test"
 import { run } from "../src/index.ts"
 import {
@@ -12,6 +13,30 @@ import {
   sampleProvider,
   type FakeAaApiHandler,
 } from "./fixtures.ts"
+
+// 만료된 rate-limit 스냅샷이 이미 든 Cache. `aa quota` 의 "롤오버" 알림을 검증할 때 쓴다.
+const makeStaleQuotaCache = (): Layer.Layer<Cache> =>
+  Layer.effect(
+    Cache,
+    Effect.gen(function* () {
+      const store = yield* Ref.make(new Map<string, { value: unknown; storedAt: number }>())
+      const staleSnapshot: QuotaSnapshot = {
+        tier: "free",
+        rateLimit: new RateLimit({ limit: 100, remaining: 0, reset: 1 }),
+        observedAt: 1000,
+      }
+      const rateLimit = yield* Ref.make(Option.some(staleSnapshot))
+      return {
+        get: (key: string) =>
+          Ref.get(store).pipe(Effect.map((m) => Option.fromNullable(m.get(key)))),
+        set: (key: string, value: unknown, _ttlSeconds: number) =>
+          Ref.update(store, (m) => new Map(m).set(key, { value, storedAt: Date.now() })),
+        clear: () => Ref.set(store, new Map()),
+        getRateLimit: () => Ref.get(rateLimit),
+        setRateLimit: (snapshot: QuotaSnapshot) => Ref.set(rateLimit, Option.some(snapshot)),
+      }
+    }),
+  )
 
 const secondModel = new LanguageModel({
   id: "m2",
@@ -84,6 +109,26 @@ describe("aa quota", () => {
     const { captured, exitCode } = runCli(["quota"], {})
     expect(exitCode).toBe(0)
     expect(captured.stdout).toHaveLength(1)
+    const parsed = JSON.parse(captured.stdout[0] ?? "{}")
+    expect(parsed.data.tier).toBeNull()
+    expect(parsed.data.observed_at).toBeNull()
+    expect(parsed.meta.notices.some((n: string) => n.includes("no quota observed yet"))).toBe(true)
+  })
+
+  it("notes a rolled-over window as stale and reports full quota", () => {
+    const { captured: capturedOutput, layer: outputLayer } = makeCapturingOutput()
+    const layer = Layer.mergeAll(
+      makeFakeAaApi({}),
+      makeStaleQuotaCache(),
+      outputLayer,
+      BunContext.layer,
+    )
+    const exitCode = Effect.runSync(run(["bun", "aa", "quota"]).pipe(Effect.provide(layer)))
+    expect(exitCode).toBe(0)
+    const parsed = JSON.parse(capturedOutput.stdout[0] ?? "{}")
+    expect(parsed.data.stale).toBe(true)
+    expect(parsed.data.remaining).toBe(100)
+    expect(parsed.meta.notices.some((n: string) => n.includes("window rolled over"))).toBe(true)
   })
 })
 
@@ -180,6 +225,16 @@ describe("ambiguity errors", () => {
     const parsed = JSON.parse(captured.stderr[0] ?? "{}")
     expect(parsed.error.code).toBe("usage")
     expect(parsed.error.hint).toContain("candidates:")
+  })
+})
+
+describe("aa --help", () => {
+  it("emits no ANSI escapes when Output reports a non-TTY", () => {
+    const { captured, exitCode } = runCli(["--help"], {})
+    expect(exitCode).toBe(0)
+    const allLines = [...captured.stdout, ...captured.stderr]
+    expect(allLines.some((l) => l.length > 0)).toBe(true)
+    for (const line of allLines) expect(line).not.toContain("\u001b[")
   })
 })
 

@@ -1,35 +1,37 @@
 // `aa quota`: 캐시된 사용량 한도 상태 (API 요청을 소모하지 않는다).
-import { getQuota, toResult } from "@aa/application"
-import { ResponseMeta } from "@aa/domain"
+import { getQuotaView, toResult } from "@aa/application"
+import { RateLimit, ResponseMeta } from "@aa/domain"
 import { Command } from "@effect/cli"
-import { Effect, Option } from "effect"
+import { Effect } from "effect"
 import { dataOptions } from "../global-options.ts"
 import { runItemCommand } from "./support.ts"
 
+const summaryFields = [
+  "tier",
+  "limit",
+  "remaining",
+  "reset",
+  "reset_in_seconds",
+  "observed_at",
+  "stale",
+]
+
 export const quotaCommand = Command.make("quota", { ...dataOptions }, (opts) => {
-  const effect = Effect.map(getQuota(), (snapshot) => {
-    if (Option.isNone(snapshot)) {
-      const meta = new ResponseMeta({
-        tier: null,
-        rate_limit: null,
-        source: "cache",
-        cached: true,
-        fetched_at: new Date(0).toISOString(),
-      })
-      return toResult(null, meta, ["no quota observed yet; run any data command first"])
-    }
-    const s = snapshot.value
+  const effect = Effect.map(getQuotaView(), (view) => {
     const meta = new ResponseMeta({
-      tier: s.tier,
-      rate_limit: s.rateLimit,
+      tier: view.tier,
+      rate_limit:
+        view.limit !== null && view.remaining !== null && view.reset !== null
+          ? new RateLimit({ limit: view.limit, remaining: view.remaining, reset: view.reset })
+          : null,
       source: "cache",
       cached: true,
-      fetched_at: new Date(s.observedAt).toISOString(),
+      fetched_at: view.observed_at ?? new Date(0).toISOString(),
     })
-    return toResult(
-      { tier: s.tier, rate_limit: s.rateLimit, observed_at: new Date(s.observedAt).toISOString() },
-      meta,
-    )
+    const notices: Array<string> = []
+    if (view.observed_at === null) notices.push("no quota observed yet; run any data command first")
+    if (view.stale) notices.push("window rolled over since last observation; full quota assumed")
+    return toResult(view, meta, notices)
   })
-  return runItemCommand(opts, ["tier", "rate_limit", "observed_at"], effect)
+  return runItemCommand(opts, summaryFields, effect)
 }).pipe(Command.withDescription("캐시된 사용량 한도 상태 (요청 소모 없음)"))
