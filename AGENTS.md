@@ -56,3 +56,8 @@
 - Conventional Commits 를 따른다. lefthook `commit-msg` 가 강제한다. 스코프는 패키지명으로 쓴다. 예: `feat(cli): add --fields projection`.
 - 커밋 전에 `bun run lint`, `bun run typecheck`, `bun run test` 가 통과해야 한다. 훅을 우회(`--no-verify`)하지 않는다.
 - `todo.md` 항목을 끝내면 체크하고 같은 커밋에 포함한다.
+
+## 서브에이전트 위임
+
+- 검증성·기계적인 작업(테스트 실행, lint/typecheck 확인, 결과 수집 등)은 가능하면 가벼운 모델(Haiku, Luna 급) 서브에이전트에 맡긴다. 도구가 모델 지정을 지원할 때만 해당한다.
+- 병렬 서브에이전트는 서로 다른 패키지만 수정하고, 자기 경로만 커밋한다.
