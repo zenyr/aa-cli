@@ -1,6 +1,6 @@
 # AGENTS.md
 
-이 저장소에서 작업하는 에이전트가 지켜야 할 원칙. 프로젝트 개요·구조·설계 상세는 `README.md`, 할 일은 `todo.md`, API 레퍼런스는 `refs/artificialanalysis/SUMMARY.md` 를 본다.
+이 저장소에서 작업하는 에이전트가 지켜야 할 원칙. 프로젝트 개요·구조·설계 상세는 `README.md`, 할 일은 `todo.md`, API 레퍼런스는 `refs/artificialanalysis/SUMMARY.md` 를 본다. 원문 스펙(`openapi.yaml`)이 없으면 `scripts/fetch-refs.sh` 로 받는다. 원문은 커밋하지 않는다.
 
 ## 보안 (절대)
 

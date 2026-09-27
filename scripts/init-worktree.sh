@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # 워크트리 최초 실행 시 개발툴이 호출한다: bash scripts/init-worktree.sh
 # 1) 메인 워크트리의 .env 를 심볼릭 링크로 연결한다 (내용은 읽지 않는다).
-# 2) 의존성을 설치한다 (lefthook 훅 설치 포함).
+# 2) 메인 워크트리의 로컬 전용 AA 원문 레퍼런스도 링크한다.
+# 3) 의존성을 설치한다 (lefthook 훅 설치 포함).
 # 여러 번 실행해도 안전하다.
 set -euo pipefail
 
@@ -28,5 +29,18 @@ link_env() {
   echo "init-worktree: .env -> $src" >&2
 }
 
+link_refs() {
+  [ "$here" = "$main" ] && return 0
+  local f
+  for f in docs.txt openapi.yaml; do
+    local src="$main/refs/artificialanalysis/$f" dst="$here/refs/artificialanalysis/$f"
+    [ -e "$src" ] || continue
+    [ -e "$dst" ] && continue
+    mkdir -p "$(dirname "$dst")"
+    ln -s "$src" "$dst"
+  done
+}
+
 link_env
+link_refs
 (cd "$here" && bun install --frozen-lockfile >&2)

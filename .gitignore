@@ -16,3 +16,7 @@ coverage/
 .vscode/*
 !.vscode/extensions.json
 
+
+# 제3자 원문 (재배포 불가, 로컬 전용: scripts/fetch-refs.sh)
+refs/artificialanalysis/docs.txt
+refs/artificialanalysis/openapi.yaml
