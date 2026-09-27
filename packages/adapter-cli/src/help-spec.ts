@@ -103,7 +103,7 @@ export const commandHelpSpecs: ReadonlyArray<CommandHelpSpec> = [
     summary: "Compare two or more language models side by side.",
     optionGroups: ["output", "fetch", "free", "promptType"],
     ownOptions: [],
-    examples: ['aa-cli compare "opus 5.5" "opus 5" --fields slug,pricing.input'],
+    examples: ['aa-cli compare "opus 5.5" "opus 5" --fields slug,pricing.price_1m_input_tokens'],
   },
   {
     path: ["list"],

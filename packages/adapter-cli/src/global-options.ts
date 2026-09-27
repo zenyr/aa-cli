@@ -16,7 +16,9 @@ const jsonFlag = Options.boolean("json").pipe(
 
 const fields = Options.text("fields").pipe(
   Options.optional,
-  Options.withDescription("Comma-separated field projection, e.g. slug,name,pricing.input"),
+  Options.withDescription(
+    "Comma-separated field projection, e.g. slug,name,pricing.price_1m_input_tokens",
+  ),
 )
 
 const full = Options.boolean("full").pipe(
@@ -40,7 +42,7 @@ const filter = Options.text("filter").pipe(
   Options.repeated,
   Options.optional,
   Options.map(Option.getOrElse((): ReadonlyArray<string> => [])),
-  Options.withDescription("Filter expression (repeatable), e.g. pricing.input<1"),
+  Options.withDescription("Filter expression (repeatable), e.g. pricing.price_1m_input_tokens<1"),
 )
 
 const noCache = Options.boolean("no-cache").pipe(
