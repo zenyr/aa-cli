@@ -10,7 +10,7 @@
   - [x] oxlint, oxfmt 설정 (레이어 간 역방향 import 금지 규칙 포함)
   - [x] lefthook
   - [x] `@aa/tsconfig`
-- [ ] `@aa/domain`: 스키마, 포트, 에러
+- [x] `@aa/domain`: 스키마, 포트, 에러
 - [ ] `@aa/adapter-aa-http`
   - [ ] HttpClient
   - [ ] 응답 헤더 파싱 (tier, rate limit)
