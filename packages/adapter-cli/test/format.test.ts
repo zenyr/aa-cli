@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test"
+import { shortenHeaders } from "../src/format/columns.ts"
 import { formatJson, formatJsonl } from "../src/format/json.ts"
 import { formatMd } from "../src/format/md.ts"
 import { formatTable } from "../src/format/table.ts"
@@ -83,5 +84,58 @@ describe("formatMd", () => {
     expect(lines[0]).toBe("| slug | name | score | note |")
     expect(lines[1]).toBe("| --- | --- | --- | --- |")
     expect(lines[2]).toContain("-")
+  })
+})
+
+describe("shortenHeaders", () => {
+  it("shortens a dot-path to its last segment when unique", () => {
+    expect(shortenHeaders(["evaluations.artificial_analysis_intelligence_index"])).toEqual([
+      "artificial_analysis_intelligence_index",
+    ])
+  })
+
+  it("disambiguates colliding last segments with the minimal unique suffix", () => {
+    const columns = [
+      "cost_per_task.total_cost",
+      "artificial_analysis_intelligence_index_cost.total_cost",
+    ]
+    expect(shortenHeaders(columns)).toEqual(columns)
+  })
+
+  it("leaves plain (non dot-path) columns untouched", () => {
+    expect(shortenHeaders(["slug", "name"])).toEqual(["slug", "name"])
+  })
+})
+
+describe("table/md header shortening", () => {
+  const dottedRows = [
+    {
+      "evaluations.artificial_analysis_intelligence_index": 42,
+      "cost_per_task.total_cost": 1,
+      "artificial_analysis_intelligence_index_cost.total_cost": 2,
+    },
+  ]
+
+  it("shortens headers in table format", () => {
+    const out = formatTable(dottedRows)
+    const header = out.split("\n")[0]
+    expect(header).toContain("artificial_analysis_intelligence_index")
+    expect(header).toContain("cost_per_task.total_cost")
+    expect(header).toContain("artificial_analysis_intelligence_index_cost.total_cost")
+  })
+
+  it("shortens headers in md format", () => {
+    const out = formatMd(dottedRows)
+    const header = out.split("\n")[0]
+    expect(header).toContain("| artificial_analysis_intelligence_index |")
+    expect(header).toContain("cost_per_task.total_cost")
+    expect(header).toContain("artificial_analysis_intelligence_index_cost.total_cost")
+  })
+
+  it("keeps full dot paths in jsonl and tsv", () => {
+    const jsonl = formatJsonl(dottedRows)
+    expect(jsonl).toContain("evaluations.artificial_analysis_intelligence_index")
+    const tsv = formatTsv(dottedRows)
+    expect(tsv.split("\n")[0]).toContain("evaluations.artificial_analysis_intelligence_index")
   })
 })
