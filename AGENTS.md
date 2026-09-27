@@ -19,6 +19,12 @@
   - 링크가 없으면 `bash scripts/init-worktree.sh` 를 실행한다.
   - 복사하거나 내용을 읽지 않는다.
 
+## 파일 탐색
+
+- 저장소 루트에서 `find .`, `grep -r .` 처럼 전체를 훑지 않는다. `node_modules`, `.git`, `dist` 까지 뒤져서 매우 느리다.
+- 추적 파일은 `git ls-files` 로 찾고, 내용 검색은 `git grep` 이나 `rg` 를 쓴다.
+- 꼭 `find` 를 써야 하면 `packages/<pkg>/src` 처럼 범위를 좁힌다.
+
 ## 아키텍처
 
 - 헥사고널 구조를 지킨다. 의존 방향은 `adapter-* → application → domain` 이다. 역방향 import 는 금지한다.
