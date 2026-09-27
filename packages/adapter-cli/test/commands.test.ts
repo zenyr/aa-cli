@@ -274,6 +274,56 @@ describe("aa (no subcommand)", () => {
   })
 })
 
+describe("root help content", () => {
+  it("is a concise, English, ANSI-free screen with Commands and Examples", () => {
+    const { captured, exitCode } = runCli(["--help"], {})
+    expect(exitCode).toBe(0)
+    const text = [...captured.stdout, ...captured.stderr].join("\n")
+    expect(text).toContain("Commands:")
+    expect(text).toContain("Examples:")
+    expect(text.split("\n").length).toBeLessThanOrEqual(40)
+    expect(/[\u{AC00}-\u{D7A3}]/u.test(text)).toBe(false)
+    expect(text).not.toContain("\u001b[")
+  })
+})
+
+describe("quota --help", () => {
+  it("does not expose --prompt-type", () => {
+    const { captured } = runCli(["quota", "--help"], {})
+    const text = [...captured.stdout, ...captured.stderr].join("\n")
+    expect(text).not.toContain("--prompt-type")
+  })
+})
+
+describe("subcommand help", () => {
+  it("hides built-in effect/cli options like --completions and --wizard", () => {
+    const { captured } = runCli(["find", "--help"], {})
+    const text = [...captured.stdout, ...captured.stderr].join("\n")
+    expect(text).not.toContain("--completions")
+    expect(text).not.toContain("--wizard")
+    expect(text).not.toContain("--log-level")
+  })
+})
+
+describe("no Hangul in adapter-cli test output", () => {
+  it("never emits Hangul characters across representative commands", () => {
+    const cases: Array<[ReadonlyArray<string>, Record<string, FakeAaApiHandler>]> = [
+      [["models"], { "/language/models": () => ({ tier: "free", data: [sampleModel] }) }],
+      [["quota"], {}],
+      [["endpoints"], {}],
+      [["--help"], {}],
+      [["find", "--help"], {}],
+      [["quota", "--help"], {}],
+      [["cache"], {}],
+    ]
+    for (const [argv, handlers] of cases) {
+      const { captured } = runCli(argv, handlers)
+      const text = [...captured.stdout, ...captured.stderr].join("\n")
+      expect(/[\u{AC00}-\u{D7A3}]/u.test(text)).toBe(false)
+    }
+  })
+})
+
 describe("tier memory", () => {
   it("never calls pro endpoints when the remembered tier is free and --free is absent", () => {
     let proCalls = 0
