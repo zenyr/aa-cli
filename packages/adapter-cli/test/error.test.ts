@@ -1,4 +1,4 @@
-import { NotFound, TierError, exitCodeOf } from "@aa/domain"
+import { NotFound, TierError, UsageError, exitCodeOf } from "@aa/domain"
 import { describe, expect, it } from "bun:test"
 import { formatError, formatErrorHuman, formatErrorJson } from "../src/format/error.ts"
 
@@ -29,6 +29,29 @@ describe("formatErrorHuman", () => {
   it("omits the hint line when absent", () => {
     const e = new NotFound({ message: "no such slug" })
     expect(formatErrorHuman(e)).toEqual(["aa: not_found: no such slug"])
+  })
+})
+
+describe("ambiguity errors", () => {
+  it("renders the candidates hint in json mode", () => {
+    const e = new UsageError({
+      message: "ambiguous query: opus",
+      hint: "candidates: opus-4, opus-4-1, opus-5",
+    })
+    const parsed = JSON.parse(formatErrorJson(e))
+    expect(parsed.error.hint).toBe("candidates: opus-4, opus-4-1, opus-5")
+    expect(exitCodeOf(e)).toBe(2)
+  })
+
+  it("renders the candidates hint as a hint line in text mode", () => {
+    const e = new UsageError({
+      message: "ambiguous query: opus",
+      hint: "candidates: opus-4, opus-4-1, opus-5",
+    })
+    expect(formatErrorHuman(e)).toEqual([
+      "aa: usage: ambiguous query: opus",
+      "hint: candidates: opus-4, opus-4-1, opus-5",
+    ])
   })
 })
 

@@ -26,14 +26,16 @@ export const formatOutput = (format: Format, data: unknown, meta: OutputMeta): F
     case "json":
       return { stdout: formatJson(data, meta), stderr: [] }
     case "jsonl":
-      return { stdout: formatJsonl(rows), stderr: [] }
+      return { stdout: formatJsonl(rows), stderr: noticesStderr(meta) }
     case "tsv":
-      return { stdout: formatTsv(rows), stderr: [] }
+      return { stdout: formatTsv(rows), stderr: noticesStderr(meta) }
     case "md":
-      return { stdout: formatMd(rows), stderr: [] }
+      return { stdout: formatMd(rows), stderr: noticesStderr(meta) }
     case "table":
-      return { stdout: formatTable(rows), stderr: tableStderr(meta) }
+      return { stdout: formatTable(rows), stderr: [attribution, ...noticesStderr(meta)] }
   }
 }
 
-const tableStderr = (meta: OutputMeta): ReadonlyArray<string> => [attribution, ...meta.notices]
+// 에이전트가 stdout 데이터와 섞이지 않게 알림을 stderr 한 줄씩, `note: ` 접두로 내보낸다.
+const noticesStderr = (meta: OutputMeta): ReadonlyArray<string> =>
+  meta.notices.map((n) => `note: ${n}`)
