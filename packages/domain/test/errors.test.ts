@@ -1,4 +1,5 @@
 import { describe, expect, it } from "bun:test"
+import { RateLimit } from "../src/response-meta.ts"
 import {
   AuthError,
   BadRequest,
@@ -11,6 +12,7 @@ import {
   UsageError,
   errorCodeOf,
   exitCodeOf,
+  observedQuotaOf,
 } from "../src/errors.ts"
 
 describe("exitCodeOf", () => {
@@ -32,5 +34,31 @@ describe("errorCodeOf", () => {
     expect(errorCodeOf(new TierError({ message: "x" }))).toBe("tier")
     expect(errorCodeOf(new RateLimited({ message: "x" }))).toBe("rate_limited")
     expect(errorCodeOf(new NotFound({ message: "x" }))).toBe("not_found")
+  })
+})
+
+describe("observedQuotaOf", () => {
+  it("extracts tier and rateLimit when present on an HTTP-originated error", () => {
+    const rateLimit = new RateLimit({ limit: 100, remaining: 0, reset: 1790000000 })
+    const error = new TierError({ message: "x", tier: "free", rateLimit })
+    expect(observedQuotaOf(error)).toEqual({ tier: "free", rateLimit })
+  })
+
+  it("returns nulls when the error carries no observed quota", () => {
+    expect(observedQuotaOf(new NotFound({ message: "x" }))).toEqual({
+      tier: null,
+      rateLimit: null,
+    })
+  })
+
+  it("returns nulls for non-HTTP errors", () => {
+    expect(observedQuotaOf(new NetworkError({ message: "x" }))).toEqual({
+      tier: null,
+      rateLimit: null,
+    })
+    expect(observedQuotaOf(new UsageError({ message: "x" }))).toEqual({
+      tier: null,
+      rateLimit: null,
+    })
   })
 })

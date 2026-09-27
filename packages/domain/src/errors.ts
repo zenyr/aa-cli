@@ -1,10 +1,14 @@
 import { Schema } from "effect"
+import { RateLimit } from "./response-meta.ts"
+import { Tier } from "./tier.ts"
 
 // 인증 실패 (401, 키 없음/무효).
 export class AuthError extends Schema.TaggedError<AuthError>()("AuthError", {
   message: Schema.String,
   status: Schema.optional(Schema.Number),
   hint: Schema.optional(Schema.String),
+  tier: Schema.optional(Tier),
+  rateLimit: Schema.optional(RateLimit),
 }) {}
 
 // 티어 부족 (403).
@@ -12,6 +16,8 @@ export class TierError extends Schema.TaggedError<TierError>()("TierError", {
   message: Schema.String,
   status: Schema.optional(Schema.Number),
   hint: Schema.optional(Schema.String),
+  tier: Schema.optional(Tier),
+  rateLimit: Schema.optional(RateLimit),
 }) {}
 
 // 리소스 없음 (404, 잘못된 slug 등).
@@ -19,6 +25,8 @@ export class NotFound extends Schema.TaggedError<NotFound>()("NotFound", {
   message: Schema.String,
   status: Schema.optional(Schema.Number),
   hint: Schema.optional(Schema.String),
+  tier: Schema.optional(Tier),
+  rateLimit: Schema.optional(RateLimit),
 }) {}
 
 // 일일 한도 초과 (429).
@@ -28,6 +36,8 @@ export class RateLimited extends Schema.TaggedError<RateLimited>()("RateLimited"
   hint: Schema.optional(Schema.String),
   retryAfter: Schema.optional(Schema.Number),
   resetAt: Schema.optional(Schema.Number),
+  tier: Schema.optional(Tier),
+  rateLimit: Schema.optional(RateLimit),
 }) {}
 
 // 잘못된 요청 (400, 필드명 오류 등).
@@ -35,6 +45,8 @@ export class BadRequest extends Schema.TaggedError<BadRequest>()("BadRequest", {
   message: Schema.String,
   status: Schema.optional(Schema.Number),
   hint: Schema.optional(Schema.String),
+  tier: Schema.optional(Tier),
+  rateLimit: Schema.optional(RateLimit),
 }) {}
 
 // 서버 오류 (5xx).
@@ -42,6 +54,8 @@ export class ServerError extends Schema.TaggedError<ServerError>()("ServerError"
   message: Schema.String,
   status: Schema.optional(Schema.Number),
   hint: Schema.optional(Schema.String),
+  tier: Schema.optional(Tier),
+  rateLimit: Schema.optional(RateLimit),
 }) {}
 
 // 네트워크 계층 실패 (연결 불가, 타임아웃 등).
@@ -81,6 +95,20 @@ export const exitCodeOf = (e: AaError): number => {
   if (e instanceof NotFound) return 5
   if (e instanceof RateLimited) return 6
   return 1 // NetworkError | DecodeError | ServerError
+}
+
+// 에러가 들고 있는 관측된 티어/쿼터를 꺼낸다. HTTP 기반이 아니거나 값이 없으면 null.
+export const observedQuotaOf = (e: AaError): { tier: Tier | null; rateLimit: RateLimit | null } => {
+  if (
+    e instanceof AuthError ||
+    e instanceof TierError ||
+    e instanceof NotFound ||
+    e instanceof RateLimited ||
+    e instanceof BadRequest ||
+    e instanceof ServerError
+  )
+    return { tier: e.tier ?? null, rateLimit: e.rateLimit ?? null }
+  return { tier: null, rateLimit: null }
 }
 
 // CLI JSON 에러 출력의 `error.code` 필드.
