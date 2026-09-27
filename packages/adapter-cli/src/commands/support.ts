@@ -17,11 +17,11 @@ export const commonOptsOf = (v: DataOptionsValue): CommonOpts => {
 }
 
 // 성공 시 exit code 0, 실패(AaError) 시 렌더링 후 README 종료 코드 표를 따른다. 이 Effect 는 실패하지 않는다.
-const finish = <A>(
+const finish = <A, R>(
   opts: DataOptionsValue,
-  effect: Effect.Effect<A, AaError>,
+  effect: Effect.Effect<A, AaError, R>,
   onSuccess: (a: A) => Effect.Effect<void, never, Output | ExitCode>,
-): Effect.Effect<void, never, Output | ExitCode> =>
+): Effect.Effect<void, never, Output | ExitCode | R> =>
   Effect.gen(function* () {
     const output = yield* Output
     const exit = yield* ExitCode
@@ -49,11 +49,11 @@ const writeRows = (
   })
 
 // 목록 커맨드: 필드 프로젝션 + 정렬 + 필터 + limit 을 모두 적용한다.
-export const runListCommand = (
+export const runListCommand = <R>(
   opts: DataOptionsValue,
   summaryFields: ReadonlyArray<string>,
-  effect: Effect.Effect<Result<ReadonlyArray<Row>>, AaError>,
-): Effect.Effect<void, never, Output | ExitCode> =>
+  effect: Effect.Effect<Result<ReadonlyArray<unknown>>, AaError, R>,
+): Effect.Effect<void, never, Output | ExitCode | R> =>
   finish(opts, effect, (result) =>
     Effect.gen(function* () {
       const output = yield* Output
@@ -80,11 +80,11 @@ export const runListCommand = (
   )
 
 // 단건 커맨드: 필드 프로젝션만 적용한다 (정렬/필터/limit 은 의미 없음).
-export const runItemCommand = (
+export const runItemCommand = <R>(
   opts: DataOptionsValue,
   summaryFields: ReadonlyArray<string>,
-  effect: Effect.Effect<Result<Row>, AaError>,
-): Effect.Effect<void, never, Output | ExitCode> =>
+  effect: Effect.Effect<Result<unknown>, AaError, R>,
+): Effect.Effect<void, never, Output | ExitCode | R> =>
   finish(opts, effect, (result) =>
     Effect.gen(function* () {
       const output = yield* Output
@@ -112,10 +112,10 @@ export const runItemCommand = (
   )
 
 // 프로젝션이 필요 없는 커맨드 (quota, endpoints, raw 등): 그대로 rows 로 출력.
-export const runRawCommand = (
+export const runRawCommand = <R>(
   opts: DataOptionsValue,
-  effect: Effect.Effect<Result<unknown>, AaError>,
-): Effect.Effect<void, never, Output | ExitCode> =>
+  effect: Effect.Effect<Result<unknown>, AaError, R>,
+): Effect.Effect<void, never, Output | ExitCode | R> =>
   finish(opts, effect, (result) =>
     Effect.gen(function* () {
       const output = yield* Output

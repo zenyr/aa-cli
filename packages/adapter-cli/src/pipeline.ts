@@ -13,11 +13,13 @@ export interface RowPipelineOptions {
   readonly limit: number | undefined
 }
 
-const asRowArray = (rows: ReadonlyArray<unknown>): ReadonlyArray<Row> => rows as ReadonlyArray<Row>
+// application 의 row 헬퍼들은 구조를 모르는 `unknown` 값을 다룬다. 최종적으로 렌더링 가능한
+// 레코드 배열(Row[])을 내놓기 위한 경계에서만 단일 타입 단언을 쓴다 (`as unknown` 은 아니다).
+const asRows = (rows: ReadonlyArray<unknown>): ReadonlyArray<Row> => rows as ReadonlyArray<Row>
 
 // filter/sort/projection/limit 순서로 적용한다. filter 표현식 하나라도 잘못되면 UsageError 로 실패한다.
 export const applyRowPipeline = (
-  rows: ReadonlyArray<Row>,
+  rows: ReadonlyArray<unknown>,
   opts: RowPipelineOptions,
 ): Effect.Effect<ReadonlyArray<Row>, UsageError> =>
   Effect.gen(function* () {
@@ -27,8 +29,8 @@ export const applyRowPipeline = (
       if (parsed._tag === "Left") return yield* Effect.fail(parsed.left)
       predicates.push(parsed.right)
     }
-    const filtered = asRowArray(filterRows(rows, predicates))
-    const sorted = opts.sort === undefined ? filtered : asRowArray(sortRows(filtered, opts.sort))
+    const filtered = filterRows(rows, predicates)
+    const sorted = opts.sort === undefined ? filtered : sortRows(filtered, opts.sort)
     const limited = opts.limit === undefined ? sorted : sorted.slice(0, opts.limit)
     const fieldList =
       opts.fields !== undefined
@@ -36,5 +38,5 @@ export const applyRowPipeline = (
         : opts.full
           ? undefined
           : opts.summaryFields
-    return fieldList === undefined ? limited : projectFields(limited, fieldList)
+    return fieldList === undefined ? asRows(limited) : projectFields(limited, fieldList)
   })
