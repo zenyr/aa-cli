@@ -7,6 +7,7 @@ import type { Terminal } from "@effect/platform/Terminal"
 import { Effect, Ref } from "effect"
 import { rootCommand } from "./commands/root.ts"
 import { ExitCode } from "./exit-code.ts"
+import { noColorConsoleLayer } from "./no-color-console.ts"
 import { Output } from "./output.ts"
 
 export { Output, OutputLive } from "./output.ts"
@@ -22,7 +23,11 @@ export const run = (
 ): Effect.Effect<number, never, AaApi | Cache | Output | FileSystem | Path | Terminal> =>
   Effect.gen(function* () {
     const exit = yield* Ref.make(0)
-    const outcome = yield* runCli(argv).pipe(Effect.provideService(ExitCode, exit), Effect.either)
+    const outcome = yield* runCli(argv).pipe(
+      Effect.provideService(ExitCode, exit),
+      Effect.provide(noColorConsoleLayer()),
+      Effect.either,
+    )
     if (outcome._tag === "Left") {
       return ValidationError.isHelpRequested(outcome.left) ? 0 : 2
     }
