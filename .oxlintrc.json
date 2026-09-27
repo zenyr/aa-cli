@@ -1,10 +1,30 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["typescript", "unicorn", "oxc", "import"],
-  "categories": { "correctness": "error", "suspicious": "warn" },
+  "categories": {
+    "correctness": "error",
+    "suspicious": "warn"
+  },
   "rules": {
     "typescript/no-explicit-any": "error",
-    "no-console": "off"
+    "no-console": "off",
+    "no-underscore-dangle": "off",
+    "typescript/no-non-null-assertion": "error",
+    "func-style": [
+      "error",
+      "expression",
+      {
+        "allowArrowFunctions": true
+      }
+    ],
+    "max-lines": [
+      "warn",
+      {
+        "max": 500,
+        "skipBlankLines": true,
+        "skipComments": true
+      }
+    ]
   },
   "ignorePatterns": ["refs/**", "**/dist/**"],
   "overrides": [
@@ -54,6 +74,12 @@
             ]
           }
         ]
+      }
+    },
+    {
+      "files": ["**/test/**", "**/*.test.ts"],
+      "rules": {
+        "max-lines": "off"
       }
     }
   ]
